@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user['display_name'] or profile_user['username'] }} 的粉丝 - {{ site_title }}{% endblock %}
+
+{% block content %}
+<div class="followers-page">
+    <div class="page-header" style="margin-bottom: var(--spacing-xl);">
+        <h1>{{ profile_user['display_name'] or profile_user['username'] }} 的粉丝</h1>
+        <p class="text-muted"><a href="/user/{{ profile_user['username'] }}">← 返回个人主页</a></p>
+    </div>
+
+    {% if followers %}
+        <div class="grid gap-md" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+            {% for follower in followers %}
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--color-bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        {% if follower['avatar_path'] %}
+                            <img src="/media/{{ follower['avatar_path'] }}" alt="{{ follower['username'] }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+                        {% else %}
+                            👤
+                        {% endif %}
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0;">
+                            <a href="/user/{{ follower['username'] }}" style="color: var(--color-text-primary);">
+                                {{ follower['display_name'] or follower['username'] }}
+                            </a>
+                        </h4>
+                        <p class="text-muted text-sm" style="margin: var(--spacing-xs) 0 0 0;">@{{ follower['username'] }}</p>
+                        {% if follower['bio'] %}
+                        <p class="text-muted text-sm" style="margin-top: var(--spacing-xs);">{{ follower['bio'][:100] }}{% if follower['bio']|length > 100 %}...{% endif %}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card text-center" style="padding: var(--spacing-2xl);">
+            <p class="text-muted">还没有粉丝</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

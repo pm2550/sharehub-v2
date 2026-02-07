@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}#{{ tag['name'] }} - {{ site_title }}{% endblock %}
+
+{% block content %}
+<div class="tag-page">
+    <div class="page-header" style="margin-bottom: var(--spacing-xl);">
+        <h1>#{{ tag['name'] }}</h1>
+        <p class="text-muted">标签下的所有帖子</p>
+    </div>
+
+    {% if posts %}
+        <div class="gallery">
+            {% for p in posts %}
+            <div class="gallery-item">
+                <a href="/post/{{ p['id'] }}">
+                    {% if p['media_type'] == 'image' %}
+                        {% if p['thumbnail_path'] %}
+                            <img src="/media/{{ p['thumbnail_path'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                        {% else %}
+                            <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                        {% endif %}
+                    {% else %}
+                        <video src="/media/{{ p['filename'] }}" muted playsinline preload="metadata"></video>
+                    {% endif %}
+                    <div class="gallery-item-overlay">
+                        <h3>{{ p['title'] }}</h3>
+                        <div class="gallery-item-meta">
+                            <span>👤 {{ p['author'] }}</span>
+                            <span>❤️ {{ p['likes'] }}</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 分页 -->
+        {% if pagination['total_pages'] > 1 %}
+        <div class="pagination">
+            {% if pagination['has_prev'] %}
+                <a href="?page={{ pagination['page'] - 1 }}" class="btn">← 上一页</a>
+            {% endif %}
+            <span class="page-info">第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页</span>
+            {% if pagination['has_next'] %}
+                <a href="?page={{ pagination['page'] + 1 }}" class="btn">下一页 →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="card text-center" style="padding: var(--spacing-2xl);">
+            <p class="text-muted">这个标签下还没有帖子</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

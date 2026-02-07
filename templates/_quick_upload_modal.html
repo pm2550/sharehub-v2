@@ -1,0 +1,21 @@
+{% if current_user %}
+<button type="button" class="quick-fab" data-modal-open="upload-modal">+ 上传</button>
+
+<dialog class="quick-upload-dialog" id="upload-modal" aria-labelledby="upload-modal-title">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="upload-modal-title">快速上传</h3>
+      <button type="button" class="modal-close" data-modal-close="upload-modal">关闭</button>
+    </div>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+      {% set next_path = (request.url.path ~ ('?' ~ request.url.query if request.url.query else '')) if request else '/me' %}
+      <input type="hidden" name="next" value="{{ next_path }}" />
+      <label>标题<input name="title" required /></label>
+      <label>描述<input name="description" /></label>
+      <label>文件<input type="file" name="media" accept="image/*,video/mp4,video/webm,video/quicktime,video/x-m4v" required /></label>
+      <p class="sub">支持图片和视频（mp4/webm/mov/m4v）。视频会显示在视频页。</p>
+      <button type="submit">上传并发布</button>
+    </form>
+  </div>
+</dialog>
+{% endif %}

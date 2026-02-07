@@ -1,0 +1,115 @@
+/**
+ * Toast 通知样式
+ */
+
+.toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all var(--transition-base);
+    pointer-events: auto;
+}
+
+.toast--visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast__icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: var(--radius-full);
+}
+
+.toast__message {
+    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-text-primary);
+}
+
+.toast__close {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.toast__close:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+/* 类型样式 */
+.toast--success .toast__icon {
+    background: var(--color-success-light);
+    color: var(--color-success);
+}
+
+.toast--error .toast__icon {
+    background: var(--color-error-light);
+    color: var(--color-error);
+}
+
+.toast--warning .toast__icon {
+    background: var(--color-warning-light);
+    color: var(--color-warning);
+}
+
+.toast--info .toast__icon {
+    background: var(--color-info-light);
+    color: var(--color-info);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .toast-container {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+
+    .toast {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+    .toast--visible {
+        transform: translateY(0);
+    }
+}

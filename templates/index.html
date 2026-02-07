@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ site_title }}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="wrap topbar">
+    <div>
+      <h1>{{ site_title }}</h1>
+      <p>图片/视频分享 + 本地 A1111 生图</p>
+    </div>
+    <div class="auth">
+      {% if current_user %}
+        <span>已登录：<strong>{{ current_user['username'] }}</strong>{% if current_user['is_admin'] %}（管理员）{% endif %}</span>
+        <form action="/logout" method="post"><button type="submit">登出</button></form>
+      {% else %}
+        <a class="btn" href="/login?next=/">登录</a>
+        <a class="btn" href="/register?next=/">注册</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="wrap grid-two">
+    <section class="card">
+      <h2>上传资源</h2>
+      {% if current_user %}
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <label>标题<input name="title" required /></label>
+        <label>描述<input name="description" /></label>
+        <label>文件<input type="file" name="media" required /></label>
+        <button type="submit">上传</button>
+      </form>
+      {% else %}
+      <p>登录后可上传。<a href="/login?next=/">去登录</a></p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>AI 生图</h2>
+      {% if current_user %}
+      <form action="/generate" method="post">
+        <label>Prompt<input name="prompt" required /></label>
+        <label>Negative Prompt<input name="negative_prompt" /></label>
+        <div class="row">
+          <label>Steps<input type="number" name="steps" value="20" min="1" max="60" /></label>
+          <label>宽<input type="number" name="width" value="512" min="256" max="1024" /></label>
+          <label>高<input type="number" name="height" value="512" min="256" max="1024" /></label>
+        </div>
+        <button type="submit">生成并发布</button>
+      </form>
+      {% else %}
+      <p>登录后可生图发布。<a href="/login?next=/">去登录</a></p>
+      {% endif %}
+    </section>
+  </main>
+
+  <section class="wrap">
+    <h2>内容流</h2>
+    <div class="gallery">
+      {% for p in posts %}
+      <article class="item">
+        <a href="/post/{{ p['id'] }}">
+          {% if p['media_type'] == 'image' %}
+            <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+          {% else %}
+            <video class="card-video" src="/media/{{ p['filename'] }}" autoplay loop muted playsinline preload="auto"></video>
+          {% endif %}
+          <div class="meta">
+            <h3>{{ p['title'] }}</h3>
+            <p>{{ p['created_at'] }} · by {{ p['author'] }} · {{ p['source'] }} · ❤ {{ p['likes'] }}</p>
+          </div>
+        </a>
+      </article>
+      {% else %}
+      <p>还没有内容，先上传一条。</p>
+      {% endfor %}
+    </div>
+  </section>
+</body>
+</html>

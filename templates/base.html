@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{{ site_title }} - 现代化内容分享平台">
+    <title>{% block title %}{{ site_title }}{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
+    <link rel="stylesheet" href="/static/css/like-button.css">
+    <link rel="stylesheet" href="/static/css/lightbox.css">
+    {% block extra_css %}{% endblock %}
+
+    <!-- 主题脚本（防止闪烁，必须在head中同步加载） -->
+    <script src="/static/js/theme.js"></script>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <!-- Logo -->
+            <a href="/" class="navbar-brand">
+                <span>✨</span>
+                <span>{{ site_title }}</span>
+            </a>
+
+            <!-- 导航菜单 -->
+            <ul class="navbar-nav">
+                <li>
+                    <a href="/" class="nav-link {% if active == 'home' %}active{% endif %}">
+                        首页
+                    </a>
+                </li>
+                <li>
+                    <a href="/images" class="nav-link {% if active == 'images' %}active{% endif %}">
+                        图片
+                    </a>
+                </li>
+                <li>
+                    <a href="/videos" class="nav-link {% if active == 'videos' %}active{% endif %}">
+                        视频
+                    </a>
+                </li>
+                <li>
+                    <a href="/ai" class="nav-link {% if active == 'ai' %}active{% endif %}">
+                        AI生成
+                    </a>
+                </li>
+            </ul>
+
+            <!-- 右侧操作 -->
+            <div class="flex items-center gap-sm">
+                <!-- 暗色模式切换 -->
+                <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+                    🌙
+                </button>
+
+                <!-- 通知图标 -->
+                {% if current_user %}
+                <a href="/notifications" class="notification-icon" id="notification-bell"
+                    style="position: relative; font-size: 1.3rem; text-decoration: none;">
+                    🔔
+                    <span id="notification-badge" class="notification-badge" style="display: none;"></span>
+                </a>
+                {% endif %}
+
+                <!-- 用户菜单 -->
+                {% if current_user %}
+                <a href="/me" class="nav-link {% if active == 'me' %}active{% endif %}">
+                    我的
+                </a>
+                {% if current_user['is_admin'] %}
+                <span class="badge badge-primary">管理员</span>
+                {% endif %}
+                <form action="/logout" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-ghost">登出</button>
+                </form>
+                {% else %}
+                <a href="/login" class="btn btn-sm btn-secondary">登录</a>
+                <a href="/register" class="btn btn-sm btn-primary">注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container main-content"
+        style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-2xl); position: relative; z-index: 1;">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "_quick_upload_modal.html" %}
+
+    <!-- 页脚 -->
+    <footer class="site-footer">
+        <div class="footer-glow"></div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="footer-logo">✨ {{ site_title }}</span>
+                    <p class="footer-tagline">现代化内容分享平台</p>
+                </div>
+                <div class="footer-links">
+                    <a href="/images">图片</a>
+                    <a href="/videos">视频</a>
+                    <a href="/ai">AI生成</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 {{ site_title }} &middot; Powered by ShareHub 2.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        .site-footer {
+            background: linear-gradient(180deg,
+                    var(--color-bg-secondary) 0%,
+                    var(--color-bg-tertiary) 100%);
+            padding: var(--spacing-2xl) 0 var(--spacing-lg);
+            margin-top: var(--spacing-2xl);
+            border-top: 1px solid var(--color-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-glow {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 200px;
+            background: radial-gradient(ellipse, rgba(102, 126, 234, 0.15), transparent 70%);
+            pointer-events: none;
+        }
+
+        [data-theme="dark"] .footer-glow {
+            background: radial-gradient(ellipse, rgba(124, 58, 237, 0.2), transparent 70%);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .footer-brand {
+            text-align: left;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-accent), #ed64a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-tagline {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-xs);
+            margin-bottom: 0;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .footer-links a {
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            transition: color var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--color-border-light);
+        }
+
+        .footer-bottom p {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-brand {
+                text-align: center;
+            }
+        }
+    </style>
+
+    <!-- Toast容器将由JS动态创建 -->
+
+    <!-- JavaScript -->
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/like.js"></script>
+    <script src="/static/js/lightbox.js"></script>
+    <script src="/static/js/confirm-dialog.js"></script>
+    <script src="/static/js/comment.js"></script>
+    <script src="/static/js/ai-poll.js"></script>
+    <script src="/static/quick-modal.js"></script>
+
+    <!-- 通知未读数轮询 -->
+    {% if current_user %}
+    <script>
+    (function() {
+        const badge = document.getElementById('notification-badge');
+        if (!badge) return;
+        async function checkUnread() {
+            try {
+                const res = await fetch('/api/notifications/unread-count');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch(e) {}
+        }
+        checkUnread();
+        setInterval(checkUnread, 60000);
+    })();
+    </script>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+
+    <!-- Flash消息转Toast -->
+    {% if get_flashed_messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            {% for category, message in get_flashed_messages(with_categories = true) %}
+            Toast.show('{{ message }}', '{{ category }}');
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
+</body>
+
+</html>

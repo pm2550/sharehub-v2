@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}注册 - {{ site_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 300px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacing-xl) 0;
+    }
+
+    .auth-container {
+        position: relative;
+        max-width: 450px;
+        width: 100%;
+    }
+
+    .auth-card {
+        position: relative;
+        text-align: center;
+        padding: var(--spacing-2xl);
+        background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.95) 0%,
+                rgba(255, 255, 255, 0.85) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: var(--radius-xl);
+        backdrop-filter: blur(20px);
+        box-shadow:
+            0 20px 60px rgba(102, 126, 234, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+        overflow: hidden;
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #ed64a6 50%, #f6ad55 100%);
+    }
+
+    [data-theme="dark"] .auth-card {
+        background: linear-gradient(135deg,
+                rgba(36, 36, 36, 0.95) 0%,
+                rgba(45, 45, 45, 0.9) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow:
+            0 20px 60px rgba(124, 58, 237, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    }
+
+    .auth-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto var(--spacing-lg);
+        background: linear-gradient(135deg, #ed64a6 0%, #f6ad55 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        box-shadow: 0 10px 30px rgba(237, 100, 166, 0.3);
+    }
+
+    .auth-card h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-sm);
+        background: linear-gradient(135deg, #ed64a6 0%, #f6ad55 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .auth-subtitle {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .auth-form {
+        margin: var(--spacing-xl) 0;
+    }
+
+    .auth-form .form-group {
+        text-align: left;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .auth-form label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 600;
+        color: var(--color-text-primary);
+    }
+
+    .auth-form .form-hint {
+        display: block;
+        margin-top: var(--spacing-xs);
+        font-size: 0.875rem;
+        color: var(--color-text-tertiary);
+    }
+
+    .auth-form input {
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        background: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        font-size: 1rem;
+        transition: all var(--transition-base);
+    }
+
+    .auth-form input:focus {
+        outline: none;
+        border-color: #ed64a6;
+        box-shadow: 0 0 0 4px rgba(237, 100, 166, 0.15);
+    }
+
+    .auth-btn {
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-xl);
+        font-size: 1rem;
+        font-weight: 600;
+        background: linear-gradient(135deg, #ed64a6 0%, #f6ad55 100%);
+        color: white;
+        border: none;
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all var(--transition-base);
+        box-shadow: 0 4px 20px rgba(237, 100, 166, 0.4);
+    }
+
+    .auth-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(237, 100, 166, 0.5);
+    }
+
+    .auth-footer {
+        margin-top: var(--spacing-xl);
+        padding-top: var(--spacing-xl);
+        border-top: 1px solid var(--color-border-light);
+        color: var(--color-text-secondary);
+    }
+
+    .auth-footer a {
+        color: var(--color-accent);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-error {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+        background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--spacing-lg);
+        color: #742a2a;
+        font-weight: 500;
+        text-align: left;
+    }
+
+    /* Decorative elements */
+    .auth-decoration {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.5;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .auth-decoration-1 {
+        top: -50px;
+        right: -50px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(237, 100, 166, 0.3), transparent 60%);
+    }
+
+    .auth-decoration-2 {
+        bottom: -30px;
+        left: -30px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(246, 173, 85, 0.25), transparent 60%);
+        animation-delay: 2s;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(10px, -10px);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <div class="auth-decoration auth-decoration-1"></div>
+        <div class="auth-decoration auth-decoration-2"></div>
+
+        <div class="auth-card">
+            <div class="auth-icon">✨</div>
+            <h1>创建账号</h1>
+            <p class="auth-subtitle">加入我们，开始分享你的创作</p>
+
+            {% if error %}
+            <div class="auth-error">
+                <span>⚠️</span> {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/register" method="post" class="auth-form">
+                <input type="hidden" name="next" value="{{ next }}" />
+
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" name="username" placeholder="选择一个用户名" minlength="3" maxlength="32"
+                        required autocomplete="username" autofocus />
+                    <span class="form-hint">3-32 个字符，将作为你的唯一标识</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" placeholder="设置一个安全的密码" minlength="6" required
+                        autocomplete="new-password" />
+                    <span class="form-hint">至少 6 位字符</span>
+                </div>
+
+                <button type="submit" class="auth-btn">🚀 创建账号</button>
+            </form>
+
+            <div class="auth-footer">
+                <p>已有账号？<a href="/login?next={{ next }}">立即登录</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

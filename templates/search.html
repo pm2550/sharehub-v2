@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}搜索: {{ query }} - {{ site_title }}{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <!-- 搜索框 -->
+    <div class="card" style="margin-bottom: var(--spacing-xl);">
+        <form action="/search" method="get" class="search-form">
+            <div style="display: flex; gap: var(--spacing-sm);">
+                <input
+                    type="text"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="搜索帖子或用户..."
+                    class="form-control"
+                    style="flex: 1;"
+                    autofocus
+                />
+                <button type="submit" class="btn btn-primary">🔍 搜索</button>
+            </div>
+        </form>
+    </div>
+
+    {% if query %}
+        <!-- 搜索结果统计 -->
+        <div style="margin-bottom: var(--spacing-lg);">
+            <h2>搜索结果</h2>
+            <p class="text-muted">找到 {{ total_results }} 个结果（关键词: "{{ query }}"）</p>
+        </div>
+
+        {% if total_results > 0 %}
+            <!-- 帖子结果 -->
+            {% if posts %}
+            <div style="margin-bottom: var(--spacing-2xl);">
+                <h3 style="margin-bottom: var(--spacing-md);">📷 帖子 ({{ posts|length }})</h3>
+                <div class="gallery">
+                    {% for p in posts %}
+                    <div class="gallery-item">
+                        <a href="/post/{{ p['id'] }}">
+                            {% if p['media_type'] == 'image' %}
+                                {% if p['thumbnail_path'] %}
+                                    <img src="/media/{{ p['thumbnail_path'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                                {% else %}
+                                    <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                                {% endif %}
+                            {% else %}
+                                <video src="/media/{{ p['filename'] }}" muted playsinline preload="metadata"></video>
+                            {% endif %}
+                            <div class="gallery-item-overlay">
+                                <h3>{{ p['title'] }}</h3>
+                                <div class="gallery-item-meta">
+                                    <span>👤 {{ p['author'] }}</span>
+                                    <span>❤️ {{ p['likes'] }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 用户结果 -->
+            {% if users %}
+            <div>
+                <h3 style="margin-bottom: var(--spacing-md);">👥 用户 ({{ users|length }})</h3>
+                <div class="grid gap-md" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+                    {% for u in users %}
+                    <div class="card">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--color-bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                                👤
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0;">
+                                    <a href="/user/{{ u['username'] }}" style="color: var(--color-text-primary);">
+                                        {{ u['display_name'] or u['username'] }}
+                                    </a>
+                                </h4>
+                                <p class="text-muted text-sm" style="margin: var(--spacing-xs) 0 0 0;">@{{ u['username'] }}</p>
+                                {% if u['bio'] %}
+                                <p class="text-muted text-sm" style="margin-top: var(--spacing-xs);">{{ u['bio'][:100] }}{% if u['bio']|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                <p class="text-muted text-sm" style="margin-top: var(--spacing-xs);">📊 {{ u['post_count'] }} 个帖子</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- 无结果 -->
+            <div class="card text-center" style="padding: var(--spacing-2xl);">
+                <p class="text-muted">没有找到匹配 "{{ query }}" 的结果</p>
+                <p class="text-muted text-sm" style="margin-top: var(--spacing-md);">试试其他关键词吧</p>
+            </div>
+        {% endif %}
+    {% else %}
+        <!-- 空状态 -->
+        <div class="card text-center" style="padding: var(--spacing-2xl);">
+            <p class="text-muted">输入关键词开始搜索</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

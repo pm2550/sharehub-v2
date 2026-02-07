@@ -1,0 +1,20 @@
+{% if pagination and pagination['total_pages'] > 1 %}
+<nav class="pager" aria-label="pagination">
+  {% if pagination['has_prev'] %}
+    <a class="page-btn" href="{{ page_path }}?page={{ pagination['prev_page'] }}">上一页</a>
+  {% else %}
+    <span class="page-btn disabled">上一页</span>
+  {% endif %}
+
+  <span class="page-info">
+    第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页
+    · {{ pagination['start'] }}-{{ pagination['end'] }} / {{ pagination['total'] }}
+  </span>
+
+  {% if pagination['has_next'] %}
+    <a class="page-btn" href="{{ page_path }}?page={{ pagination['next_page'] }}">下一页</a>
+  {% else %}
+    <span class="page-btn disabled">下一页</span>
+  {% endif %}
+</nav>
+{% endif %}

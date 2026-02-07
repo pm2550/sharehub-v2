@@ -1,0 +1,412 @@
+/**
+ * ShareHub 2.0 - 基础样式
+ */
+
+/* Reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(ellipse 100% 80% at 50% -30%, rgba(102, 126, 234, 0.25), transparent 50%),
+        radial-gradient(ellipse 80% 60% at 100% 0%, rgba(237, 100, 166, 0.18), transparent 40%),
+        radial-gradient(ellipse 70% 50% at 0% 50%, rgba(102, 126, 234, 0.12), transparent 40%),
+        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(246, 173, 85, 0.15), transparent 40%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(72, 187, 120, 0.12), transparent 40%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(248, 250, 252, 1) 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    transition: background-color var(--transition-base), color var(--transition-base);
+    position: relative;
+}
+
+/* 装饰性背景光晕 - 更强烈的效果 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle 800px at 85% 15%, rgba(102, 126, 234, 0.12), transparent 45%),
+        radial-gradient(circle 600px at 15% 85%, rgba(237, 100, 166, 0.1), transparent 45%),
+        radial-gradient(circle 500px at 50% 50%, rgba(246, 173, 85, 0.06), transparent 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 添加微妙的网格纹理 */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        linear-gradient(rgba(102, 126, 234, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 暗色模式背景 */
+[data-theme="dark"] body {
+    background-color: #0f0f10;
+    background-image:
+        radial-gradient(ellipse 100% 80% at 50% -30%, rgba(124, 58, 237, 0.3), transparent 50%),
+        radial-gradient(ellipse 80% 60% at 100% 0%, rgba(237, 100, 166, 0.2), transparent 40%),
+        radial-gradient(ellipse 70% 50% at 0% 50%, rgba(124, 58, 237, 0.15), transparent 40%),
+        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(246, 173, 85, 0.12), transparent 40%),
+        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(72, 187, 120, 0.1), transparent 40%);
+}
+
+[data-theme="dark"] body::before {
+    background:
+        radial-gradient(circle 600px at 80% 20%, rgba(124, 58, 237, 0.12), transparent 50%),
+        radial-gradient(circle 400px at 20% 80%, rgba(237, 100, 166, 0.08), transparent 50%);
+}
+
+/* 链接 */
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--color-accent-hover);
+    text-decoration: underline;
+}
+
+/* 标题 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.5em;
+    color: var(--color-text-primary);
+}
+
+h1 {
+    font-size: 2.25rem;
+}
+
+h2 {
+    font-size: 1.875rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.25rem;
+}
+
+h5 {
+    font-size: 1.125rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+/* 段落 */
+p {
+    margin-bottom: 1em;
+    color: var(--color-text-secondary);
+}
+
+/* 图片 */
+img,
+video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 按钮 */
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 表单元素 */
+input,
+textarea,
+select {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+}
+
+/* 选中文本 */
+::selection {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+}
+
+/* 焦点样式 */
+:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+/* 布局容器 */
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.container-narrow {
+    max-width: 960px;
+}
+
+.container-wide {
+    max-width: 1440px;
+}
+
+/* Flex 工具类 */
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.gap-xs {
+    gap: var(--spacing-xs);
+}
+
+.gap-sm {
+    gap: var(--spacing-sm);
+}
+
+.gap-md {
+    gap: var(--spacing-md);
+}
+
+.gap-lg {
+    gap: var(--spacing-lg);
+}
+
+.gap-xl {
+    gap: var(--spacing-xl);
+}
+
+/* Grid 工具类 */
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* 间距工具类 */
+.mt-xs {
+    margin-top: var(--spacing-xs);
+}
+
+.mt-sm {
+    margin-top: var(--spacing-sm);
+}
+
+.mt-md {
+    margin-top: var(--spacing-md);
+}
+
+.mt-lg {
+    margin-top: var(--spacing-lg);
+}
+
+.mt-xl {
+    margin-top: var(--spacing-xl);
+}
+
+.mb-xs {
+    margin-bottom: var(--spacing-xs);
+}
+
+.mb-sm {
+    margin-bottom: var(--spacing-sm);
+}
+
+.mb-md {
+    margin-bottom: var(--spacing-md);
+}
+
+.mb-lg {
+    margin-bottom: var(--spacing-lg);
+}
+
+.mb-xl {
+    margin-bottom: var(--spacing-xl);
+}
+
+.p-xs {
+    padding: var(--spacing-xs);
+}
+
+.p-sm {
+    padding: var(--spacing-sm);
+}
+
+.p-md {
+    padding: var(--spacing-md);
+}
+
+.p-lg {
+    padding: var(--spacing-lg);
+}
+
+.p-xl {
+    padding: var(--spacing-xl);
+}
+
+/* 文本工具类 */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.text-base {
+    font-size: 1rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+.text-secondary {
+    color: var(--color-text-secondary);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+
+    .grid-cols-2,
+    .grid-cols-3,
+    .grid-cols-4 {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}

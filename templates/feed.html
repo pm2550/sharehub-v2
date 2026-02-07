@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.page-header h1 {
+    margin: 0;
+}
+
+.page-description {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.filter-tabs {
+    display: flex;
+    gap: var(--spacing-xs);
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-md);
+}
+
+.filter-tabs a {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all var(--transition-base);
+    font-weight: 500;
+}
+
+.filter-tabs a.active {
+    background: var(--color-bg-primary);
+    color: var(--color-accent);
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-tabs a:hover {
+    color: var(--color-text-primary);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.pagination a,
+.pagination span {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-text-primary);
+    transition: all var(--transition-base);
+}
+
+.pagination a:hover {
+    background: var(--color-bg-secondary);
+}
+
+.pagination .current {
+    background: var(--color-accent);
+    color: white;
+    font-weight: 600;
+}
+
+.pagination .disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-text-secondary);
+}
+
+.empty-state h3 {
+    margin-bottom: var(--spacing-md);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>{{ page_title }}</h1>
+        <p class="page-description">{{ page_desc }}</p>
+    </div>
+    <div class="filter-tabs">
+        <a href="/images" class="{% if active == 'images' %}active{% endif %}">📷 图片</a>
+        <a href="/videos" class="{% if active == 'videos' %}active{% endif %}">🎬 视频</a>
+        <a href="/ai" class="{% if active == 'ai' %}active{% endif %}">🤖 AI</a>
+    </div>
+</div>
+
+{% if posts %}
+<!-- Pagination Top -->
+{% if pagination['total_pages'] > 1 %}
+<div class="pagination">
+    {% if pagination['page'] > 1 %}
+        <a href="?page={{ pagination['page'] - 1 }}">← 上一页</a>
+    {% else %}
+        <span class="disabled">← 上一页</span>
+    {% endif %}
+
+    <span class="current">第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页</span>
+
+    {% if pagination['page'] < pagination['total_pages'] %}
+        <a href="?page={{ pagination['page'] + 1 }}">下一页 →</a>
+    {% else %}
+        <span class="disabled">下一页 →</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Gallery -->
+<div class="gallery">
+    {% for p in posts %}
+    <div class="gallery-item">
+        <a href="/post/{{ p['id'] }}">
+            {% if p['media_type'] == 'image' %}
+                <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+            {% else %}
+                <video src="/media/{{ p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
+            {% endif %}
+            <div class="gallery-item-overlay">
+                <h3>{{ p['title'] }}</h3>
+                <div class="gallery-item-meta">
+                    <span>👤 {{ p['author'] }}</span>
+                    <span>❤️ {{ p['likes'] }}</span>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination Bottom -->
+{% if pagination['total_pages'] > 1 %}
+<div class="pagination">
+    {% if pagination['page'] > 1 %}
+        <a href="?page={{ pagination['page'] - 1 }}">← 上一页</a>
+    {% else %}
+        <span class="disabled">← 上一页</span>
+    {% endif %}
+
+    <span class="current">第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页</span>
+
+    {% if pagination['page'] < pagination['total_pages'] %}
+        <a href="?page={{ pagination['page'] + 1 }}">下一页 →</a>
+    {% else %}
+        <span class="disabled">下一页 →</span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="card empty-state">
+    <h3>暂无内容</h3>
+    <p>这里还没有任何内容，成为第一个分享者吧！</p>
+    {% if current_user %}
+        {% if active == 'ai' %}
+            <a href="/ai" class="btn btn-primary" style="margin-top: var(--spacing-lg);">开始 AI 创作</a>
+        {% else %}
+            <a href="/me" class="btn btn-primary" style="margin-top: var(--spacing-lg);">上传内容</a>
+        {% endif %}
+    {% else %}
+        <a href="/login" class="btn btn-primary" style="margin-top: var(--spacing-lg);">登录后分享</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

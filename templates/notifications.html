@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}通知 - {{ site_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.notifications-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.notification-item {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--color-border);
+    transition: background 0.2s;
+}
+
+.notification-item:hover {
+    background: var(--color-bg-secondary);
+}
+
+.notification-item.unread {
+    background: rgba(var(--color-accent-rgb), 0.05);
+    border-left: 3px solid var(--color-accent);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+}
+
+.notification-type {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.notification-type.like { background: #ffe4e6; color: #be123c; }
+.notification-type.comment { background: #dbeafe; color: #1e40af; }
+.notification-type.follow { background: #dcfce7; color: #15803d; }
+.notification-type.ai_complete { background: #fef3c7; color: #a16207; }
+
+.notification-time {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.notification-message {
+    margin-top: var(--spacing-xs);
+}
+
+.mark-all-read-btn {
+    margin-bottom: var(--spacing-md);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xl);">
+        <h1>通知</h1>
+        {% if unread_count > 0 %}
+        <button class="btn btn-secondary mark-all-read-btn" onclick="markAllAsRead()">
+            全部标为已读
+        </button>
+        {% endif %}
+    </div>
+
+    {% if notifications %}
+        <div class="card" style="padding: 0;">
+            {% for notif in notifications %}
+            <div class="notification-item {% if not notif['is_read'] %}unread{% endif %}" data-id="{{ notif['id'] }}">
+                <div class="notification-header">
+                    <span class="notification-type {{ notif['type'] }}">
+                        {% if notif['type'] == 'like' %}❤️ 点赞
+                        {% elif notif['type'] == 'comment' %}💬 评论
+                        {% elif notif['type'] == 'follow' %}👤 关注
+                        {% elif notif['type'] == 'ai_complete' %}🎨 AI完成
+                        {% else %}📢 通知{% endif %}
+                    </span>
+                    <span class="notification-time">{{ notif['created_at'][:16] }}</span>
+                </div>
+                <div class="notification-message">
+                    {{ notif['message'] }}
+                </div>
+                {% if notif['post_id'] %}
+                <a href="/post/{{ notif['post_id'] }}" style="font-size: var(--font-size-sm); color: var(--color-accent); margin-top: var(--spacing-xs); display: inline-block;">
+                    查看帖子 →
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card text-center" style="padding: var(--spacing-2xl);">
+            <p class="text-muted">暂无通知</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+async function markAllAsRead() {
+    try {
+        const response = await fetch('/notifications/read-all', {
+            method: 'POST',
+        });
+
+        if (response.ok) {
+            // 刷新页面
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Failed to mark all as read:', error);
+    }
+}
+
+// 点击通知项时标记为已读
+document.querySelectorAll('.notification-item.unread').forEach(item => {
+    item.addEventListener('click', async function() {
+        const id = this.dataset.id;
+        try {
+            await fetch(`/notifications/${id}/read`, {
+                method: 'POST',
+            });
+            this.classList.remove('unread');
+        } catch (error) {
+            console.error('Failed to mark as read:', error);
+        }
+    });
+});
+</script>
+{% endblock %}

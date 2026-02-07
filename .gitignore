@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.local
+
+# Database
+data/sharehub.db
+data/sharehub.db-shm
+data/sharehub.db-wal
+*.db
+*.sqlite
+*.sqlite3
+
+# Media Files (uploaded content)
+data/media/
+static/uploads/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.backup_*
+
+# AI Model files (too large for git)
+*.safetensors
+*.ckpt
+*.pth
+
+# Node modules (if any)
+node_modules/

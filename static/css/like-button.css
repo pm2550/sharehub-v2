@@ -1,0 +1,72 @@
+/**
+ * 点赞按钮样式
+ */
+
+.like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 999px;
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.like-btn:hover {
+    border-color: #ff6b6b;
+    background: #fff5f5;
+    transform: scale(1.05);
+}
+
+.like-btn:active {
+    transform: scale(0.95);
+}
+
+.like-btn.liked {
+    border-color: #ff6b6b;
+    background: #ffe0e0;
+    color: #ff6b6b;
+}
+
+.like-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.like-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.like-count {
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* 点赞动画 */
+@keyframes likeAnimation {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.like-btn.like-animation .like-icon {
+    animation: likeAnimation 0.3s ease;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .like-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    .like-icon {
+        font-size: 14px;
+    }
+}

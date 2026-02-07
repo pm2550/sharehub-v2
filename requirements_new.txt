@@ -1,0 +1,17 @@
+# ShareHub 2.0 依赖
+
+# 核心框架
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+jinja2==3.1.6
+python-multipart==0.0.20
+requests==2.32.3
+itsdangerous==2.2.0
+
+# Phase 1 新增依赖
+pydantic-settings>=2.1.0
+python-dotenv>=1.0.0
+Pillow>=10.2.0
+
+# Phase 2-3 可选依赖（后续添加）
+# slowapi>=0.1.9  # 速率限制
