@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/static/css/components.css">
     <link rel="stylesheet" href="/static/css/toast.css">
     <link rel="stylesheet" href="/static/css/like-button.css">
+    <link rel="stylesheet" href="/static/css/bookmark-button.css">
     <link rel="stylesheet" href="/static/css/lightbox.css">
     {% block extra_css %}{% endblock %}
 
@@ -52,6 +53,13 @@
                         AI生成
                     </a>
                 </li>
+                {% if current_user %}
+                <li>
+                    <a href="/following-feed" class="nav-link {% if active == 'following-feed' %}active{% endif %}">
+                        👥 关注
+                    </a>
+                </li>
+                {% endif %}
             </ul>
 
             <!-- 右侧操作 -->
@@ -68,12 +76,22 @@
                     🔔
                     <span id="notification-badge" class="notification-badge" style="display: none;"></span>
                 </a>
+
+                <!-- 私信图标 -->
+                <a href="/messages" class="notification-icon" id="message-icon"
+                    style="position: relative; font-size: 1.3rem; text-decoration: none; margin-left: var(--spacing-sm);">
+                    💬
+                    <span id="message-badge" class="notification-badge" style="display: none;"></span>
+                </a>
                 {% endif %}
 
                 <!-- 用户菜单 -->
                 {% if current_user %}
                 <a href="/me" class="nav-link {% if active == 'me' %}active{% endif %}">
                     我的
+                </a>
+                <a href="/favorites" class="nav-link {% if active == 'favorites' %}active{% endif %}">
+                    🔖 收藏
                 </a>
                 {% if current_user['is_admin'] %}
                 <span class="badge badge-primary">管理员</span>
@@ -219,6 +237,7 @@
     <!-- JavaScript -->
     <script src="/static/js/toast.js"></script>
     <script src="/static/js/like.js"></script>
+    <script src="/static/js/favorite.js"></script>
     <script src="/static/js/lightbox.js"></script>
     <script src="/static/js/confirm-dialog.js"></script>
     <script src="/static/js/comment.js"></script>
@@ -228,25 +247,48 @@
     <!-- 通知未读数轮询 -->
     {% if current_user %}
     <script>
-    (function() {
-        const badge = document.getElementById('notification-badge');
-        if (!badge) return;
-        async function checkUnread() {
-            try {
-                const res = await fetch('/api/notifications/unread-count');
-                if (!res.ok) return;
-                const data = await res.json();
-                if (data.count > 0) {
-                    badge.textContent = data.count > 99 ? '99+' : data.count;
-                    badge.style.display = '';
-                } else {
-                    badge.style.display = 'none';
-                }
-            } catch(e) {}
-        }
-        checkUnread();
-        setInterval(checkUnread, 60000);
-    })();
+        (function () {
+            const badge = document.getElementById('notification-badge');
+            if (!badge) return;
+            async function checkUnread() {
+                try {
+                    const res = await fetch('/api/notifications/unread-count');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } catch (e) { }
+            }
+            checkUnread();
+            setInterval(checkUnread, 60000);
+        })();
+    </script>
+
+    <!-- 私信未读数轮询 -->
+    <script>
+        (function () {
+            const badge = document.getElementById('message-badge');
+            if (!badge) return;
+            async function checkUnread() {
+                try {
+                    const res = await fetch('/api/messages/unread-count');
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    if (data.count > 0) {
+                        badge.textContent = data.count > 99 ? '99+' : data.count;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } catch (e) { }
+            }
+            checkUnread();
+            setInterval(checkUnread, 60000);
+        })();
     </script>
     {% endif %}
 

@@ -9,8 +9,8 @@ from app.config import get_settings
 from app.dependencies import require_auth, get_db_conn, get_current_user
 from app.services.posts import query_posts, count_posts
 from app.services.ai_queue import (
-    submit_job, list_jobs, average_job_seconds,
-    delete_ai_job, move_job_up, move_job_down
+    submit_job, list_jobs, average_job_seconds, seconds_to_text,
+    delete_ai_job, move_job_up, move_job_down, queue_runtime_map
 )
 from app.services.auth import now_iso
 
@@ -79,6 +79,7 @@ def ai_page(
             "active_queue_jobs": active_queue_jobs,
             "my_queue_jobs": my_queue_jobs,
             "avg_seconds": avg_seconds,
+            "avg_text": seconds_to_text(avg_seconds),
             "queued": queued,
         },
         db,
@@ -91,8 +92,8 @@ def generate_image(
     prompt: str = Form(...),
     negative_prompt: str = Form(""),
     steps: int = Form(40),
-    width: int = Form(768),
-    height: int = Form(1024),
+    width: int = Form(1024),
+    height: int = Form(768),
     next: str = Form("/ai"),
     user: dict = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db_conn)
@@ -102,9 +103,9 @@ def generate_image(
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
 
-    safe_steps = max(1, min(60, steps))
+    safe_steps = max(1, min(40, steps))
     safe_width = max(256, min(1024, width))
-    safe_height = max(256, min(1024, height))
+    safe_height = max(256, min(768, height))
 
     submit_job(
         db,
@@ -171,3 +172,22 @@ def move_down(
         )
     db.commit()
     return JSONResponse(content={"success": True, "message": "任务已下移"})
+
+
+@router.get("/api/ai/queue")
+def api_ai_queue(
+    request: Request,
+    db: sqlite3.Connection = Depends(get_db_conn)
+):
+    """返回当前队列状态（AJAX轮询用）"""
+    user = get_current_user(request, db)
+    queue_jobs = list_jobs(db, limit=30)
+    active = [j for j in queue_jobs if j["status"] in ("running", "pending")]
+    my_jobs = list_jobs(db, limit=20, only_user_id=user["id"]) if user else []
+    avg = average_job_seconds(db)
+
+    return JSONResponse(content={
+        "active_jobs": active,
+        "my_jobs": my_jobs,
+        "avg_text": seconds_to_text(avg),
+    })

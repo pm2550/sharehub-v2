@@ -29,13 +29,14 @@ class Settings(BaseSettings):
     AI_MAX_RETRIES: int = 3
     AI_DEFAULT_JOB_SECONDS: int = 50
     AI_JOB_HISTORY: int = 30
-    AI_JOB_TIMEOUT_SECONDS: int = 600  # 10分钟超时自动标记失败
+    AI_JOB_TIMEOUT_SECONDS: int = 3600  # 仅作安全网，实际靠检测 A1111 状态判断卡住
 
     # 文件上传限制
     MAX_IMAGE_SIZE_MB: int = 20
     MAX_VIDEO_SIZE_MB: int = 200
     ALLOWED_IMAGE_EXT: Set[str] = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
     ALLOWED_VIDEO_EXT: Set[str] = {".mp4", ".webm", ".mov", ".m4v"}
+    MAX_VIDEO_DURATION_SECONDS: int = 120  # 视频最长2分钟
 
     # 缩略图尺寸
     THUMBNAIL_SIZE_SM: tuple = (300, 300)

@@ -32,8 +32,8 @@ def create_prompt(
     prompt: str = Form(...),
     negative_prompt: str = Form(""),
     steps: int = Form(40),
-    width: int = Form(768),
-    height: int = Form(1024),
+    width: int = Form(1024),
+    height: int = Form(768),
     db: sqlite3.Connection = Depends(get_db_conn),
     current_user: dict = Depends(require_auth)
 ):
@@ -64,8 +64,8 @@ def edit_prompt(
     prompt: str = Form(...),
     negative_prompt: str = Form(""),
     steps: int = Form(40),
-    width: int = Form(768),
-    height: int = Form(1024),
+    width: int = Form(1024),
+    height: int = Form(768),
     db: sqlite3.Connection = Depends(get_db_conn),
     current_user: dict = Depends(require_auth)
 ):

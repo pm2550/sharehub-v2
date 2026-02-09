@@ -7,9 +7,13 @@ import sqlite3
 
 from app.config import get_settings
 from app.dependencies import get_db_conn, get_current_user, require_auth
-from app.services.follows import follow_user, unfollow_user, is_following, get_followers, get_following
+from app.services.follows import (
+    follow_user, unfollow_user, is_following, get_followers, get_following,
+    get_following_feed_posts, count_following_feed_posts, get_recommended_users
+)
 from app.services.users import get_user_by_username
 from app.services.notifications import create_notification
+from app.services.posts import build_pagination
 
 settings = get_settings()
 templates = Jinja2Templates(directory=str(settings.APP_DIR / "templates"))
@@ -142,6 +146,42 @@ def following_page(
             "active": "",
             "profile_user": user,
             "following": following,
+        },
+        db,
+    )
+
+
+@router.get("/following-feed")
+def following_feed_page(
+    request: Request,
+    page: int = 1,
+    user: dict = Depends(require_auth),
+    db: sqlite3.Connection = Depends(get_db_conn)
+):
+    """关注动态页面"""
+    page_size = settings.FEED_PAGE_SIZE
+
+    # 获取关注用户的帖子
+    posts = get_following_feed_posts(db, user["id"], limit=page_size, offset=(page - 1) * page_size)
+    total = count_following_feed_posts(db, user["id"])
+
+    # 获取推荐用户
+    recommended_users = get_recommended_users(db, user["id"], limit=5)
+
+    # 构建分页
+    pagination = build_pagination(page, total, page_size)
+
+    return render(
+        request,
+        "following_feed.html",
+        {
+            "active": "following-feed",
+            "page_title": "关注动态",
+            "page_desc": "你关注的用户的最新内容",
+            "posts": posts,
+            "pagination": pagination,
+            "recommended_users": recommended_users,
+            "total_count": total,
         },
         db,
     )

@@ -266,6 +266,24 @@
             </div>
         </div>
 
+        <!-- 操作按钮 (仅当不是自己且已登录时) -->
+        {% if current_user and current_user['id'] != profile_user['id'] %}
+        <div
+            style="margin-top: var(--spacing-md); display: flex; gap: var(--spacing-sm); justify-content: center; flex-wrap: wrap;">
+            <!-- 关注按钮 -->
+            <button id="follow-btn" class="btn {% if is_following %}btn-secondary{% else %}btn-primary{% endif %}"
+                data-username="{{ profile_user['username'] }}"
+                data-following="{{ 'true' if is_following else 'false' }}">
+                <span class="follow-text">{{ '✓ 已关注' if is_following else '+ 关注' }}</span>
+            </button>
+
+            <!-- 发私信按钮 -->
+            <a href="/messages/{{ profile_user['username'] }}" class="btn btn-primary" style="text-decoration: none;">
+                💬 发私信
+            </a>
+        </div>
+        {% endif %}
+
         <div class="profile-stats">
             <div class="profile-stat">
                 <div class="profile-stat-number">{{ pagination['total'] }}</div>
@@ -346,4 +364,50 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Follow/Unfollow functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const followBtn = document.getElementById('follow-btn');
+        if (!followBtn) return;
+
+        followBtn.addEventListener('click', async function () {
+            const username = this.dataset.username;
+            const isFollowing = this.dataset.following === 'true';
+
+            try {
+                const response = await fetch('/user/' + username + '/follow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) throw new Error('Network error');
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Toggle state based on action
+                    const newFollowing = (data.action === 'followed');
+                    this.dataset.following = newFollowing;
+
+                    // Update button appearance
+                    if (newFollowing) {
+                        this.classList.remove('btn-primary');
+                        this.classList.add('btn-secondary');
+                        this.querySelector('.follow-text').textContent = '✓ 已关注';
+                    } else {
+                        this.classList.remove('btn-secondary');
+                        this.classList.add('btn-primary');
+                        this.querySelector('.follow-text').textContent = '+ 关注';
+                    }
+                }
+            } catch (error) {
+                console.error('Follow error:', error);
+                alert('操作失败，请重试');
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -73,9 +73,90 @@ def get_follow_counts(conn: sqlite3.Connection, user_id: int) -> dict:
     followers = conn.execute(
         "SELECT COUNT(*) FROM follows WHERE followed_id = ?", (user_id,)
     ).fetchone()[0]
-    
+
     following = conn.execute(
         "SELECT COUNT(*) FROM follows WHERE follower_id = ?", (user_id,)
     ).fetchone()[0]
-    
+
     return {"followers": followers, "following": following}
+
+
+def get_following_feed_posts(
+    conn: sqlite3.Connection,
+    user_id: int,
+    limit: int = 18,
+    offset: int = 0
+) -> List[sqlite3.Row]:
+    """
+    获取关注用户的帖子动态
+
+    返回所有关注用户的帖子，按创建时间倒序排列
+    """
+    return conn.execute(
+        """
+        SELECT p.id, p.user_id, p.title, p.description, p.media_type, p.filename,
+               p.thumbnail_path, p.source, p.prompt, p.likes, p.created_at,
+               COALESCE(u.display_name, u.username, 'legacy') AS author,
+               COALESCE(u.username, 'legacy') AS author_username,
+               COALESCE(u.avatar_path, '') AS author_avatar
+        FROM posts p
+        LEFT JOIN users u ON u.id = p.user_id
+        WHERE p.user_id IN (SELECT followed_id FROM follows WHERE follower_id = ?)
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+        """,
+        (user_id, limit, offset)
+    ).fetchall()
+
+
+def count_following_feed_posts(conn: sqlite3.Connection, user_id: int) -> int:
+    """计算关注动态的帖子总数"""
+    row = conn.execute(
+        """
+        SELECT COUNT(*) as count
+        FROM posts
+        WHERE user_id IN (SELECT followed_id FROM follows WHERE follower_id = ?)
+        """,
+        (user_id,)
+    ).fetchone()
+    return row["count"] if row else 0
+
+
+def get_recommended_users(
+    conn: sqlite3.Connection,
+    user_id: int,
+    limit: int = 10
+) -> List[sqlite3.Row]:
+    """
+    获取推荐关注的用户
+
+    按发帖数和粉丝数排序，排除已关注和自己
+    """
+    return conn.execute(
+        """
+        SELECT u.id, u.username, u.display_name, u.bio, u.avatar_path,
+               COUNT(DISTINCT p.id) AS post_count,
+               (SELECT COUNT(*) FROM follows f2 WHERE f2.followed_id = u.id) AS follower_count
+        FROM users u
+        LEFT JOIN posts p ON p.user_id = u.id
+        WHERE u.id != ?
+          AND u.id NOT IN (SELECT followed_id FROM follows WHERE follower_id = ?)
+        GROUP BY u.id
+        ORDER BY post_count DESC, follower_count DESC
+        LIMIT ?
+        """,
+        (user_id, user_id, limit)
+    ).fetchall()
+
+
+def get_followed_user_ids(conn: sqlite3.Connection, user_id: int) -> set:
+    """
+    获取用户关注的所有用户ID集合
+
+    用于批量检查关注状态
+    """
+    rows = conn.execute(
+        "SELECT followed_id FROM follows WHERE follower_id = ?",
+        (user_id,)
+    ).fetchall()
+    return {row["followed_id"] for row in rows}

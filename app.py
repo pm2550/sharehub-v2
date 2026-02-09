@@ -1013,7 +1013,7 @@ def generate_image(
         raise HTTPException(status_code=400, detail="Prompt is required")
     safe_steps = max(1, min(60, steps))
     safe_width = max(256, min(1024, width))
-    safe_height = max(256, min(1024, height))
+    safe_height = max(256, min(768, height))
 
     with db_conn() as conn:
         conn.execute(

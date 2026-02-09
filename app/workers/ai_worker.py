@@ -34,11 +34,29 @@ class AIWorker:
 
     def start(self):
         """启动worker线程"""
+        self._recover_orphaned_jobs()
         self._thread = threading.Thread(
             target=self._run, daemon=True, name="ai-worker"
         )
         self._thread.start()
         logger.info("AI Worker started")
+
+    def _recover_orphaned_jobs(self):
+        """启动时把上次遗留的 running 任务重置为 pending（上次进程死掉导致的孤儿任务）"""
+        try:
+            with get_db(self.db_path) as conn:
+                orphaned = conn.execute(
+                    "SELECT id FROM ai_jobs WHERE status = 'running'"
+                ).fetchall()
+                if orphaned:
+                    conn.execute(
+                        "UPDATE ai_jobs SET status = 'pending', started_at = NULL, started_unix = NULL WHERE status = 'running'"
+                    )
+                    conn.commit()
+                    ids = [str(r["id"]) for r in orphaned]
+                    logger.info(f"Recovered orphaned running jobs: #{', #'.join(ids)} → pending")
+        except Exception as e:
+            logger.error(f"Error recovering orphaned jobs: {e}")
 
     def stop(self):
         """停止worker线程"""
@@ -61,7 +79,7 @@ class AIWorker:
                 self._cleanup_counter += 1
                 if self._cleanup_counter >= 20:
                     self._cleanup_counter = 0
-                    self._cleanup_timed_out_jobs()
+                    self._cleanup_stuck_jobs()
 
                 has_job = self._process_next_job()
                 # 有任务时更频繁检查，无任务时降低频率
@@ -71,39 +89,59 @@ class AIWorker:
                 logger.exception(f"Unhandled error in AI worker: {e}")
                 self._stop_event.wait(5)  # 出错后等待5秒再继续
 
-    def _cleanup_timed_out_jobs(self):
-        """清理超时的 running 任务"""
-        cutoff = now_unix() - self.job_timeout
+    def _cleanup_stuck_jobs(self):
+        """清理卡住的 running 任务（A1111 没在跑但数据库显示 running）"""
+        try:
+            # 检查 A1111 是否有活跃任务
+            resp = requests.get(f"{self.api_url}/sdapi/v1/progress", timeout=5)
+            progress = resp.json()
+            a1111_busy = progress.get("state", {}).get("job_count", 0) > 0
+        except Exception:
+            return  # A1111 不可达时不做清理
+
+        if a1111_busy:
+            return  # A1111 正在工作，不清理
+
+        # A1111 空闲但有 running 任务 → 卡住了（至少等 60 秒避免竞态）
+        cutoff = now_unix() - 60
         try:
             with get_db(self.db_path) as conn:
-                timed_out = conn.execute(
+                stuck = conn.execute(
                     """
-                    SELECT id FROM ai_jobs
+                    SELECT id, retry_count FROM ai_jobs
                     WHERE status = 'running' AND started_unix IS NOT NULL AND started_unix < ?
                     """,
                     (cutoff,)
                 ).fetchall()
 
-                if timed_out:
-                    finished_at = now_iso()
-                    finished_unix = now_unix()
-                    for row in timed_out:
+                if stuck:
+                    for row in stuck:
                         job_id = row["id"]
-                        conn.execute(
-                            """
-                            UPDATE ai_jobs
-                            SET status = 'failed', finished_at = ?, finished_unix = ?,
-                                error_message = ?
-                            WHERE id = ?
-                            """,
-                            (finished_at, finished_unix,
-                             f"任务超时（超过 {self.job_timeout} 秒），已自动取消",
-                             job_id)
-                        )
-                        logger.warning(f"AI job #{job_id} timed out after {self.job_timeout}s, marked as failed")
+                        retry_count = (row["retry_count"] or 0) + 1
+                        if retry_count < self.max_retries:
+                            # 还有重试次数，重置为 pending
+                            conn.execute(
+                                "UPDATE ai_jobs SET status = 'pending', started_at = NULL, started_unix = NULL, retry_count = ? WHERE id = ?",
+                                (retry_count, job_id)
+                            )
+                            logger.warning(f"AI job #{job_id} stuck (A1111 idle), reset to pending (retry {retry_count}/{self.max_retries})")
+                        else:
+                            # 超过重试次数，标记失败
+                            conn.execute(
+                                """
+                                UPDATE ai_jobs
+                                SET status = 'failed', finished_at = ?, finished_unix = ?,
+                                    error_message = ?, retry_count = ?
+                                WHERE id = ?
+                                """,
+                                (now_iso(), now_unix(),
+                                 f"任务失败：已重试 {retry_count} 次仍无法完成",
+                                 retry_count, job_id)
+                            )
+                            logger.warning(f"AI job #{job_id} permanently failed after {retry_count} retries")
                     conn.commit()
         except Exception as e:
-            logger.error(f"Error cleaning up timed out jobs: {e}")
+            logger.error(f"Error cleaning up stuck jobs: {e}")
 
     def _process_next_job(self) -> bool:
         """
@@ -125,6 +163,7 @@ class AIWorker:
             if not job:
                 return False
 
+            job = dict(job)  # sqlite3.Row → dict (支持 .get())
             job_id = job["id"]
 
             # 标记为running
@@ -164,8 +203,8 @@ class AIWorker:
             "steps": int(job.get("steps", 40)),
             "sampler_name": job.get("sampler", "Euler a"),
             "cfg_scale": float(job.get("cfg_scale", 5.5)),
-            "width": int(job.get("width", 768)),
-            "height": int(job.get("height", 1024)),
+            "width": int(job.get("width", 1024)),
+            "height": int(job.get("height", 768)),
             "override_settings": {
                 "sd_model_checkpoint": "animagineXL40_v4Opt.safetensors"
             }
@@ -177,7 +216,7 @@ class AIWorker:
         logger.debug(f"Calling A1111 API: {self.api_url}/sdapi/v1/txt2img")
 
         resp = requests.post(
-            f"{self.api_url}/sdapi/v1/txt2img", json=payload, timeout=300
+            f"{self.api_url}/sdapi/v1/txt2img", json=payload, timeout=None
         )
         resp.raise_for_status()
         data = resp.json()

@@ -179,6 +179,16 @@ def user_page(
         limit=settings.USER_PAGE_SIZE,
         offset=(pagination["page"] - 1) * settings.USER_PAGE_SIZE,
     )
+    
+    # Check if current user is following this profile user
+    current_user = get_current_user(request, db)
+    is_following = False
+    if current_user:
+        follow_row = db.execute(
+            "SELECT 1 FROM follows WHERE follower_id = ? AND followed_id = ?",
+            (current_user["id"], user["id"])
+        ).fetchone()
+        is_following = follow_row is not None
 
     return render(
         request,
@@ -188,6 +198,7 @@ def user_page(
             "profile_user": user,
             "posts": posts,
             "pagination": pagination,
+            "is_following": is_following,
         },
         db,
     )
@@ -231,12 +242,20 @@ def post_detail(
     ).fetchall()
 
     liked = 0
+    favorited = 0
     if user:
         row = db.execute(
             "SELECT 1 FROM post_likes WHERE post_id = ? AND user_id = ?",
             (post_id, user["id"]),
         ).fetchone()
         liked = 1 if row else 0
+
+        # 检查收藏状态
+        fav_row = db.execute(
+            "SELECT 1 FROM favorites WHERE post_id = ? AND user_id = ?",
+            (post_id, user["id"]),
+        ).fetchone()
+        favorited = 1 if fav_row else 0
 
     is_owner = bool(user and post["user_id"] and user["id"] == post["user_id"])
     is_admin = bool(user and user["is_admin"])
@@ -259,6 +278,7 @@ def post_detail(
             "is_owner": is_owner,
             "is_admin": is_admin,
             "liked": liked,
+            "favorited": favorited,
             "back_url": back_url,
         },
         db,

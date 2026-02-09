@@ -8,7 +8,7 @@ import uuid
 
 from app.config import get_settings
 from app.dependencies import require_auth, get_db_conn
-from app.services.media import validate_media_file, transcode_video, strip_exif, generate_thumbnails
+from app.services.media import validate_media_file, transcode_video, strip_exif, generate_thumbnails, get_video_duration
 from app.services.auth import now_iso
 
 settings = get_settings()
@@ -38,6 +38,9 @@ async def upload(
     media_dir = Path(settings.MEDIA_DIR)
     media_dir.mkdir(parents=True, exist_ok=True)
 
+    thumbnail_path = None
+    max_bytes = (settings.MAX_VIDEO_SIZE_MB if media_type == "video" else settings.MAX_IMAGE_SIZE_MB) * 1024 * 1024
+
     if media_type == "video":
         base = uuid.uuid4().hex
         raw_name = f"{base}_raw{ext or '.bin'}"
@@ -45,13 +48,28 @@ async def upload(
         unique_name = f"{base}.mp4"
         file_path = media_dir / unique_name
 
-        # 保存原始文件
+        # 保存原始文件（边写边检查大小）
+        total_size = 0
         with raw_path.open("wb") as f:
             while True:
                 chunk = await media.read(1024 * 1024)
                 if not chunk:
                     break
+                total_size += len(chunk)
+                if total_size > max_bytes:
+                    f.close()
+                    raw_path.unlink(missing_ok=True)
+                    raise HTTPException(status_code=413, detail=f"视频文件过大，最大 {settings.MAX_VIDEO_SIZE_MB}MB")
                 f.write(chunk)
+
+        # 检查视频时长
+        duration = get_video_duration(str(raw_path))
+        if duration > settings.MAX_VIDEO_DURATION_SECONDS:
+            raw_path.unlink(missing_ok=True)
+            raise HTTPException(
+                status_code=400,
+                detail=f"视频时长 {int(duration)} 秒，超过限制（最长 {settings.MAX_VIDEO_DURATION_SECONDS} 秒）"
+            )
 
         try:
             transcode_video(raw_path, file_path)
@@ -59,14 +77,20 @@ async def upload(
             if raw_path.exists():
                 raw_path.unlink()
     else:
-        # 图片上传
+        # 图片上传（边写边检查大小）
         unique_name = f"{uuid.uuid4().hex}{ext or '.bin'}"
         file_path = media_dir / unique_name
+        total_size = 0
         with file_path.open("wb") as f:
             while True:
                 chunk = await media.read(1024 * 1024)
                 if not chunk:
                     break
+                total_size += len(chunk)
+                if total_size > max_bytes:
+                    f.close()
+                    file_path.unlink(missing_ok=True)
+                    raise HTTPException(status_code=413, detail=f"图片文件过大，最大 {settings.MAX_IMAGE_SIZE_MB}MB")
                 f.write(chunk)
 
         # 清除 EXIF 数据（保护隐私）
@@ -76,7 +100,6 @@ async def upload(
             print(f"Warning: Failed to strip EXIF: {e}")
 
         # 生成缩略图
-        thumbnail_path = None
         try:
             thumbs = generate_thumbnails(str(file_path), str(media_dir))
             if thumbs and "md" in thumbs:

@@ -175,6 +175,35 @@ def strip_exif(image_path: str):
         print(f"Warning: Failed to strip EXIF: {e}")
 
 
+def get_video_duration(input_path: str) -> float:
+    """
+    获取视频时长（秒）
+
+    Returns:
+        视频时长秒数，失败返回 0
+    """
+    ffprobe_bin = shutil.which("ffprobe")
+    if not ffprobe_bin:
+        return 0
+
+    cmd = [
+        ffprobe_bin,
+        "-v", "quiet",
+        "-print_format", "json",
+        "-show_format",
+        str(input_path),
+    ]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        if proc.returncode == 0:
+            import json
+            info = json.loads(proc.stdout)
+            return float(info.get("format", {}).get("duration", 0))
+    except Exception:
+        pass
+    return 0
+
+
 def transcode_video(input_path: str, output_path: str):
     """
     转码视频为兼容格式 (H.264 + AAC)
@@ -192,6 +221,8 @@ def transcode_video(input_path: str, output_path: str):
             status_code=500, detail="服务器未安装 ffmpeg，无法处理视频"
         )
 
+    input_path = str(input_path)
+    output_path = str(output_path)
     tmp_out = output_path + ".tmp.mp4"
 
     cmd = [

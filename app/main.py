@@ -102,11 +102,13 @@ def create_app() -> FastAPI:
 
     # 静态文件
     app.mount("/static", StaticFiles(directory=str(settings.APP_DIR / "static")), name="static")
+    app.mount("/media", StaticFiles(directory=settings.MEDIA_DIR), name="media")
 
     # 注册路由
     from app.routers import (
         auth, pages, upload, ai, comments, users, posts, likes,
-        search, tags, follows, notifications, admin, api, prompts
+        search, tags, follows, notifications, admin, api, prompts,
+        favorites, messages
     )
 
     app.include_router(auth.router)
@@ -116,10 +118,12 @@ def create_app() -> FastAPI:
     app.include_router(comments.router)
     app.include_router(users.router)
     app.include_router(posts.router)
+    app.include_router(favorites.router)
     app.include_router(likes.router)
     app.include_router(search.router)
     app.include_router(tags.router)
     app.include_router(follows.router)
+    app.include_router(messages.router)
     app.include_router(notifications.router)
     app.include_router(admin.router)
     app.include_router(api.router)

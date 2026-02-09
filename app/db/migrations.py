@@ -201,6 +201,49 @@ MIGRATIONS: List[str] = [
     """
     ALTER TABLE ai_jobs ADD COLUMN priority INTEGER DEFAULT 0;
     """,
+
+    # Version 13: 收藏/书签系统
+    """
+    CREATE TABLE IF NOT EXISTS favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        post_id INTEGER NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        UNIQUE(user_id, post_id),
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_favorites_user_id ON favorites(user_id);
+    CREATE INDEX IF NOT EXISTS idx_favorites_post_id ON favorites(post_id);
+    """,
+
+    # Version 14: 私信系统
+    """
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id INTEGER NOT NULL,
+        receiver_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        is_read INTEGER DEFAULT 0,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY(receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(sender_id);
+    CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages(receiver_id);
+    CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_messages_unread ON messages(receiver_id, is_read);
+    """,
+
+    # Version 15: Following Feed 优化索引
+    """
+    CREATE INDEX IF NOT EXISTS idx_posts_user_created ON posts(user_id, created_at DESC);
+    """,
+
+    # Version 16: 私信支持附带帖子卡片
+    """
+    ALTER TABLE messages ADD COLUMN post_id INTEGER DEFAULT NULL REFERENCES posts(id) ON DELETE SET NULL;
+    """,
 ]
 
 

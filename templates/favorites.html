@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+}
+
+.page-header h1 {
+    margin: 0;
+}
+
+.page-description {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+}
+
+.stats {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin: var(--spacing-xl) 0;
+}
+
+.pagination a,
+.pagination span {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-text-primary);
+    transition: all var(--transition-base);
+}
+
+.pagination a:hover {
+    background: var(--color-bg-secondary);
+}
+
+.pagination .current {
+    background: var(--color-accent);
+    color: white;
+    font-weight: 600;
+}
+
+.pagination .disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-text-secondary);
+}
+
+.empty-state h3 {
+    margin-bottom: var(--spacing-md);
+}
+
+.empty-state .icon {
+    font-size: 4rem;
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>🔖 {{ page_title }}</h1>
+        <p class="page-description">{{ page_desc }}</p>
+        {% if total_count > 0 %}
+        <p class="stats">共 {{ total_count }} 个收藏</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if posts %}
+<!-- Pagination Top -->
+{% if pagination['total_pages'] > 1 %}
+<div class="pagination">
+    {% if pagination['page'] > 1 %}
+        <a href="?page={{ pagination['page'] - 1 }}">← 上一页</a>
+    {% else %}
+        <span class="disabled">← 上一页</span>
+    {% endif %}
+
+    <span class="current">第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页</span>
+
+    {% if pagination['page'] < pagination['total_pages'] %}
+        <a href="?page={{ pagination['page'] + 1 }}">下一页 →</a>
+    {% else %}
+        <span class="disabled">下一页 →</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Gallery -->
+<div class="gallery">
+    {% for p in posts %}
+    <div class="gallery-item">
+        <a href="/post/{{ p['id'] }}">
+            {% if p['media_type'] == 'image' %}
+                {% if p['thumbnail_path'] %}
+                    <img src="/media/{{ p['thumbnail_path'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                {% else %}
+                    <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                {% endif %}
+            {% else %}
+                <video src="/media/{{ p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
+            {% endif %}
+            <div class="gallery-item-overlay">
+                <h3>{{ p['title'] }}</h3>
+                <div class="gallery-item-meta">
+                    <span>👤 {{ p['author'] }}</span>
+                    <span>❤️ {{ p['likes'] }}</span>
+                    {% if p['source'] == 'ai' %}
+                        <span>🤖 AI</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination Bottom -->
+{% if pagination['total_pages'] > 1 %}
+<div class="pagination">
+    {% if pagination['page'] > 1 %}
+        <a href="?page={{ pagination['page'] - 1 }}">← 上一页</a>
+    {% else %}
+        <span class="disabled">← 上一页</span>
+    {% endif %}
+
+    <span class="current">第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页</span>
+
+    {% if pagination['page'] < pagination['total_pages'] %}
+        <a href="?page={{ pagination['page'] + 1 }}">下一页 →</a>
+    {% else %}
+        <span class="disabled">下一页 →</span>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="card empty-state">
+    <div class="icon">🔖</div>
+    <h3>还没有收藏</h3>
+    <p>你还没有收藏任何内容，浏览精彩内容时点击收藏按钮即可保存！</p>
+    <a href="/" class="btn btn-primary" style="margin-top: var(--spacing-lg);">浏览内容</a>
+</div>
+{% endif %}
+{% endblock %}

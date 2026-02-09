@@ -237,6 +237,16 @@
                 <span class="like-icon">{% if liked %}❤️{% else %}🤍{% endif %}</span>
                 <span class="like-count">{{ post['likes'] }}</span>
             </button>
+
+            <!-- AJAX Bookmark Button -->
+            <button
+                class="bookmark-btn {% if favorited %}bookmarked{% endif %}"
+                data-post-id="{{ post['id'] }}"
+                aria-pressed="{% if favorited %}true{% else %}false{% endif %}"
+            >
+                <span class="bookmark-icon">{% if favorited %}🔖{% else %}📑{% endif %}</span>
+                <span class="bookmark-text">{% if favorited %}已收藏{% else %}收藏{% endif %}</span>
+            </button>
         {% else %}
             <a href="/login?next=/post/{{ post['id'] }}" class="btn btn-secondary">登录后点赞</a>
         {% endif %}
@@ -319,8 +329,8 @@ async function savePromptFromPost() {
     formData.append('prompt', {{ post['prompt']|tojson }});
     formData.append('negative_prompt', '');
     formData.append('steps', '40');
-    formData.append('width', '768');
-    formData.append('height', '1024');
+    formData.append('width', '1024');
+    formData.append('height', '768');
 
     try {
         const res = await fetch('/api/prompts', { method: 'POST', body: formData });

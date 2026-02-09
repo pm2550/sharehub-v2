@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}我的私信 - {{ site_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/messages.css?v=20260208-1">
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <div class="page-header">
+        <h1>💬 我的私信</h1>
+        {% if unread_message_count > 0 %}
+        <span class="badge badge-primary">{{ unread_message_count }} 未读</span>
+        {% endif %}
+    </div>
+
+    {% if conversations %}
+    <div class="conversations-list">
+        {% for c in conversations %}
+        <a href="/messages/{{ c.other_user.username }}"
+            class="conversation-item {% if c.unread_count > 0 %}unread{% endif %}">
+            <div class="avatar-wrapper">
+                {% if c.other_user.avatar_path %}
+                <img src="/media/{{ c.other_user.avatar_path }}" alt="{{ c.other_user.display_name }}" class="avatar">
+                {% else %}
+                <div class="avatar-placeholder">{{ (c.other_user.display_name or c.other_user.username)[0] | upper }}
+                </div>
+                {% endif %}
+                {% if c.unread_count > 0 %}
+                <div class="unread-dot"></div>
+                {% endif %}
+            </div>
+
+            <div class="conversation-content">
+                <div class="conversation-header">
+                    <span class="partner-name">{{ c.other_user.display_name or c.other_user.username }}</span>
+                    <span class="message-time">{{ c.last_message.created_at[:16] }}</span>
+                </div>
+                <div class="message-preview">
+                    {% if c.last_message.sender_id == current_user.id %}
+                    <span class="me-prefix">我:</span>
+                    {% endif %}
+                    {{ c.last_message.content_preview or c.last_message.content }}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">💬</div>
+        <h3>还没有发起对话</h3>
+        <p>去用户主页给感兴趣的人发私信吧！</p>
+        <a href="/" class="btn btn-primary">探索用户</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

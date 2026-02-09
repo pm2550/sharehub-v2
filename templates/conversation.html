@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}与 {{ partner.display_name or partner.username }} 的对话 - {{ site_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/messages.css?v=20260209-2">
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- 聊天头部 -->
+    <div class="chat-header">
+        <a href="/messages" class="back-btn">←</a>
+        <div class="partner-info">
+            <a href="/user/{{ partner.username }}" class="partner-link">
+                {% if partner.avatar_path %}
+                <img src="/media/{{ partner.avatar_path }}" alt="{{ partner.display_name }}" class="avatar-sm">
+                {% else %}
+                <div class="avatar-placeholder-sm">{{ (partner.display_name or partner.username)[0] | upper }}
+                </div>
+                {% endif %}
+                <span class="partner-name">{{ partner.display_name or partner.username }}</span>
+            </a>
+        </div>
+        <div class="chat-actions"></div>
+    </div>
+
+    <!-- 消息列表 -->
+    <div class="chat-messages" id="chat-messages">
+        {% for m in messages %}
+        <div class="message-row {% if m.sender_id == current_user.id %}me{% else %}other{% endif %}"
+            data-id="{{ m.id }}">
+            {% if m.sender_id != current_user.id %}
+            <div class="message-avatar">
+                {% if partner.avatar_path %}
+                <img src="/media/{{ partner.avatar_path }}" alt="" class="avatar-xs">
+                {% else %}
+                <div class="avatar-placeholder-xs">{{ (partner.display_name or partner.username)[0] | upper }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="message-bubble">
+                {# 帖子卡片 #}
+                {% if m.post %}
+                <a href="/post/{{ m.post.id }}" class="shared-post-card">
+                    <div class="shared-post-thumb">
+                        {% if m.post.media_type == 'video' %}
+                        <video src="/media/{{ m.post.filename }}" muted preload="metadata" class="shared-post-media"></video>
+                        <div class="play-badge">▶</div>
+                        {% elif m.post.thumbnail_path %}
+                        <img src="/media/{{ m.post.thumbnail_path }}" alt="{{ m.post.title }}" class="shared-post-media" loading="lazy">
+                        {% else %}
+                        <img src="/media/{{ m.post.filename }}" alt="{{ m.post.title }}" class="shared-post-media" loading="lazy">
+                        {% endif %}
+                    </div>
+                    <div class="shared-post-info">
+                        <div class="shared-post-title">{{ m.post.title }}</div>
+                        <div class="shared-post-meta">
+                            {% if m.post.source == 'ai' %}🤖 AI · {% endif %}
+                            {{ '图片' if m.post.media_type == 'image' else '视频' }} · ❤️ {{ m.post.likes }}
+                        </div>
+                    </div>
+                </a>
+                {% endif %}
+
+                {# 文本内容 #}
+                {% if m.content and m.content != '[分享帖子]' %}
+                <div class="message-text">{{ m.content }}</div>
+                {% elif not m.post %}
+                <div class="message-text">{{ m.content }}</div>
+                {% endif %}
+
+                <div class="message-meta">{{ m.created_at[:16] }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- 附加帖子预览（发送前） -->
+    <div id="attached-post-preview" class="attached-post-preview" style="display: none;">
+        <div class="attached-post-inner">
+            <img id="attached-post-thumb" src="" alt="" class="attached-thumb">
+            <div class="attached-info">
+                <span id="attached-post-title"></span>
+            </div>
+            <button type="button" id="remove-attached-post" class="remove-attached-btn">&times;</button>
+        </div>
+    </div>
+
+    <!-- 输入区域 -->
+    <div class="chat-input-area">
+        <form id="message-form" class="message-form" data-partner="{{ partner.username }}">
+            <input type="hidden" id="attached-post-id" name="post_id" value="">
+            <button type="button" id="share-post-btn" class="share-post-btn" title="分享帖子">📎</button>
+            <textarea name="content" id="message-input" placeholder="发送消息..." rows="1"></textarea>
+            <button type="submit" class="send-btn" disabled>发送</button>
+        </form>
+    </div>
+</div>
+
+<!-- 帖子选择弹窗 -->
+<div id="share-post-modal" class="share-modal-overlay" style="display: none;">
+    <div class="share-modal">
+        <div class="share-modal-header">
+            <h3>选择要分享的帖子</h3>
+            <button type="button" id="close-share-modal" class="close-modal-btn">&times;</button>
+        </div>
+        <div class="share-modal-search">
+            <input type="text" id="share-search-input" placeholder="搜索帖子标题..." autocomplete="off">
+        </div>
+        <div class="share-modal-body" id="share-post-list">
+            <div class="share-loading">加载中...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/messages.js?v=20260209-2"></script>
+{% endblock %}

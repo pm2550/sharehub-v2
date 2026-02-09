@@ -1,0 +1,88 @@
+/**
+ * 收藏/书签按钮样式
+ */
+
+.bookmark-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 999px;
+    background: #fff;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.bookmark-btn:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+    transform: scale(1.05);
+}
+
+.bookmark-btn:active {
+    transform: scale(0.95);
+}
+
+.bookmark-btn.bookmarked {
+    border-color: #667eea;
+    background: #e0e7ff;
+    color: #667eea;
+}
+
+.bookmark-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.bookmark-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.bookmark-text {
+    font-weight: 600;
+}
+
+/* 收藏动画 */
+@keyframes bookmarkAnimation {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.bookmark-btn.bookmark-animation .bookmark-icon {
+    animation: bookmarkAnimation 0.3s ease;
+}
+
+/* 暗色模式 */
+[data-theme="dark"] .bookmark-btn {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .bookmark-btn:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.2);
+}
+
+[data-theme="dark"] .bookmark-btn.bookmarked {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.3);
+    color: #8b9eff;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .bookmark-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+
+    .bookmark-icon {
+        font-size: 14px;
+    }
+}

@@ -12,8 +12,8 @@ def save_prompt(
     prompt: str,
     negative_prompt: str = "",
     steps: int = 40,
-    width: int = 768,
-    height: int = 1024,
+    width: int = 1024,
+    height: int = 768,
 ) -> int:
     """保存一条 Prompt"""
     name = name.strip()[:100]
@@ -39,8 +39,8 @@ def update_prompt(
     prompt: str,
     negative_prompt: str = "",
     steps: int = 40,
-    width: int = 768,
-    height: int = 1024,
+    width: int = 1024,
+    height: int = 768,
 ) -> bool:
     """更新一条 Prompt"""
     name = name.strip()[:100]
