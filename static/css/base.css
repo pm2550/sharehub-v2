@@ -1,5 +1,5 @@
 /**
- * ShareHub 2.0 - 基础样式
+ * ShareHub 2.0 - Soft Anime Base Styles
  */
 
 /* Reset */
@@ -15,6 +15,7 @@ html {
     font-size: 16px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -22,21 +23,20 @@ body {
     font-size: 1rem;
     line-height: 1.6;
     color: var(--color-text-primary);
-    background-color: #f8fafc;
-    background-image:
-        radial-gradient(ellipse 100% 80% at 50% -30%, rgba(102, 126, 234, 0.25), transparent 50%),
-        radial-gradient(ellipse 80% 60% at 100% 0%, rgba(237, 100, 166, 0.18), transparent 40%),
-        radial-gradient(ellipse 70% 50% at 0% 50%, rgba(102, 126, 234, 0.12), transparent 40%),
-        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(246, 173, 85, 0.15), transparent 40%),
-        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(72, 187, 120, 0.12), transparent 40%),
-        linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 50%, rgba(248, 250, 252, 1) 100%);
+    background-color: var(--color-bg-primary);
+    background-image: url('../images/background_anime.png');
+    background-size: cover;
+    background-position: center bottom;
+    /* Anchor to bottom for landscape */
     background-attachment: fixed;
+    background-repeat: no-repeat;
     min-height: 100vh;
     transition: background-color var(--transition-base), color var(--transition-base);
     position: relative;
+    overflow-x: hidden;
 }
 
-/* 装饰性背景光晕 - 更强烈的效果 */
+/* 装饰性叠加层 - Dot Pattern */
 body::before {
     content: '';
     position: fixed;
@@ -44,15 +44,21 @@ body::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background:
-        radial-gradient(circle 800px at 85% 15%, rgba(102, 126, 234, 0.12), transparent 45%),
-        radial-gradient(circle 600px at 15% 85%, rgba(237, 100, 166, 0.1), transparent 45%),
-        radial-gradient(circle 500px at 50% 50%, rgba(246, 173, 85, 0.06), transparent 50%);
+    background-image:
+        radial-gradient(var(--color-bg-primary) 15%, transparent 16%),
+        radial-gradient(var(--color-bg-primary) 15%, transparent 16%);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.3;
+    /* Adjusted for visibility over image */
     pointer-events: none;
     z-index: -1;
+    mask-image: linear-gradient(to bottom, transparent, black);
+    /* Fade in pattern */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black);
 }
 
-/* 添加微妙的网格纹理 */
+/* Floating Particles (Simulated via CSS) */
 body::after {
     content: '';
     position: fixed;
@@ -60,41 +66,105 @@ body::after {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image:
-        linear-gradient(rgba(102, 126, 234, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
+    background:
+        radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.4) 0%, transparent 10%),
+        radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.3) 0%, transparent 8%);
+    background-size: 100% 100%;
     pointer-events: none;
     z-index: -1;
+    animation: float-particles 20s infinite alternate ease-in-out;
 }
 
-/* 暗色模式背景 */
+/* Animations Keyframes */
+@keyframes float-particles {
+    0% {
+        transform: translateY(0) scale(1);
+    }
+
+    100% {
+        transform: translateY(-20px) scale(1.1);
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes bounce-in {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.02);
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(0.98);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse-soft {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 128, 171, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 128, 171, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 128, 171, 0);
+    }
+}
+
+/* Animation Classes */
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+.animate-appear {
+    animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 暗色模式背景调整 */
 [data-theme="dark"] body {
-    background-color: #0f0f10;
-    background-image:
-        radial-gradient(ellipse 100% 80% at 50% -30%, rgba(124, 58, 237, 0.3), transparent 50%),
-        radial-gradient(ellipse 80% 60% at 100% 0%, rgba(237, 100, 166, 0.2), transparent 40%),
-        radial-gradient(ellipse 70% 50% at 0% 50%, rgba(124, 58, 237, 0.15), transparent 40%),
-        radial-gradient(ellipse 60% 40% at 100% 80%, rgba(246, 173, 85, 0.12), transparent 40%),
-        radial-gradient(ellipse 50% 40% at 0% 100%, rgba(72, 187, 120, 0.1), transparent 40%);
+    background-color: var(--color-bg-primary);
+    background-blend-mode: multiply;
+    /* Darken the anime sky */
 }
 
 [data-theme="dark"] body::before {
-    background:
-        radial-gradient(circle 600px at 80% 20%, rgba(124, 58, 237, 0.12), transparent 50%),
-        radial-gradient(circle 400px at 20% 80%, rgba(237, 100, 166, 0.08), transparent 50%);
+    opacity: 0.1;
 }
 
 /* 链接 */
 a {
     color: var(--color-accent);
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: all var(--transition-fast);
 }
 
 a:hover {
     color: var(--color-accent-hover);
-    text-decoration: underline;
+    text-decoration: none;
+    text-shadow: 0 0 8px var(--color-accent-light);
 }
 
 /* 标题 */
@@ -104,30 +174,31 @@ h3,
 h4,
 h5,
 h6 {
-    font-weight: 600;
+    font-weight: 700;
     line-height: 1.3;
     margin-bottom: 0.5em;
     color: var(--color-text-primary);
+    letter-spacing: -0.02em;
 }
 
 h1 {
-    font-size: 2.25rem;
+    font-size: 2.5rem;
 }
 
 h2 {
-    font-size: 1.875rem;
+    font-size: 2rem;
 }
 
 h3 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
 }
 
 h4 {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
 }
 
 h5 {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
 }
 
 h6 {
@@ -146,56 +217,77 @@ video {
     max-width: 100%;
     height: auto;
     display: block;
+    border-radius: var(--radius-md);
 }
 
-/* 按钮 */
+/* 按钮基础 */
 button {
     font-family: inherit;
     cursor: pointer;
+    border: none;
+    outline: none;
+    border-radius: var(--radius-full);
 }
 
 button:disabled {
     cursor: not-allowed;
     opacity: 0.6;
+    filter: grayscale(0.5);
 }
 
-/* 表单元素 */
+/* 表单元素基础 */
 input,
 textarea,
 select {
     font-family: inherit;
     font-size: inherit;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
+    padding: var(--spacing-sm) var(--spacing-md);
+    transition: all var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--color-border-focus);
+    box-shadow: 0 0 0 4px var(--color-accent-light);
+    outline: none;
 }
 
 /* 滚动条 */
 ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--color-bg-secondary);
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--color-border);
+    background: var(--color-text-tertiary);
     border-radius: var(--radius-full);
+    border: 2px solid transparent;
+    background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-muted);
+    background: var(--color-accent);
+    border: 2px solid transparent;
+    background-clip: content-box;
 }
 
 /* 选中文本 */
 ::selection {
-    background: var(--color-accent-light);
-    color: var(--color-accent);
+    background: var(--color-accent);
+    color: white;
 }
 
 /* 焦点样式 */
 :focus-visible {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 4px var(--color-border-focus);
 }
 
 /* 布局容器 */
@@ -388,18 +480,6 @@ select {
         font-size: 14px;
     }
 
-    h1 {
-        font-size: 1.75rem;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-    }
-
-    h3 {
-        font-size: 1.25rem;
-    }
-
     .container {
         padding: 0 var(--spacing-md);
     }
@@ -408,5 +488,15 @@ select {
     .grid-cols-3,
     .grid-cols-4 {
         grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    html {
+        font-size: 13px;
+    }
+
+    .container {
+        padding: 0 var(--spacing-sm);
     }
 }

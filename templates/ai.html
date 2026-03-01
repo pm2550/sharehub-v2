@@ -689,6 +689,27 @@
         margin-top: 2px;
     }
 
+    /* ========== RunPod Quota ========== */
+    .runpod-quota-info {
+        margin-top: var(--spacing-sm);
+        text-align: center;
+    }
+    .quota-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: var(--radius-lg);
+        font-size: 0.8125rem;
+        font-weight: 500;
+    }
+    .quota-ok {
+        background: rgba(52, 199, 89, 0.12);
+        color: #2d9a4e;
+    }
+    .quota-used {
+        background: rgba(255, 149, 0, 0.12);
+        color: #c77a00;
+    }
+
     /* ========== Responsive ========== */
     @media (max-width: 768px) {
         .ai-hero h1 {
@@ -744,7 +765,7 @@
         <h3><span>🚀</span> 提交 AI 任务</h3>
 
         {% if current_user %}
-        <form action="/generate" method="post">
+        <form id="ai-generate-form" action="/generate" method="post">
             <input type="hidden" name="next" value="/ai" />
 
             <div class="form-group">
@@ -764,18 +785,18 @@
             <div class="three-column-inputs">
                 <div class="form-group">
                     <label for="steps">Steps</label>
-                    <input type="number" id="steps" name="steps" value="20" min="1" max="40" class="form-input" />
+                    <input type="number" id="steps" name="steps" value="40" min="1" max="50" class="form-input" />
                 </div>
 
                 <div class="form-group">
                     <label for="width">宽度</label>
-                    <input type="number" id="width" name="width" value="512" min="256" max="1024" step="64"
+                    <input type="number" id="width" name="width" value="768" min="256" max="1024" step="64"
                         class="form-input" />
                 </div>
 
                 <div class="form-group">
                     <label for="height">高度</label>
-                    <input type="number" id="height" name="height" value="768" min="256" max="768" step="64"
+                    <input type="number" id="height" name="height" value="1024" min="256" max="1024" step="64"
                         class="form-input" />
                 </div>
             </div>
@@ -801,6 +822,16 @@
             <div class="form-hint">
                 <span>⏱️</span> 当前估算平均耗时：{{ avg_text }}/任务
             </div>
+
+            {% if runpod_enabled %}
+            <div class="runpod-quota-info">
+                {% if runpod_remaining is not none and runpod_remaining > 0 %}
+                <span class="quota-badge quota-ok">☁️ RunPod 今日剩余 {{ runpod_remaining }}/{{ runpod_daily_limit }} 次</span>
+                {% elif runpod_remaining is not none and runpod_remaining == 0 %}
+                <span class="quota-badge quota-used">☁️ RunPod 今日已用完，将使用本地生成</span>
+                {% endif %}
+            </div>
+            {% endif %}
         </form>
         {% else %}
         <div style="text-align: center; padding: var(--spacing-xl);">
@@ -973,8 +1004,57 @@
 
 {% block extra_js %}
 {% if current_user %}
-<script src="/static/js/prompts.js"></script>
+<script src="/static/js/prompts.js?v=2"></script>
 <script>
+// AJAX 提交生成表单，保留表单内容不清空
+(function() {
+    const form = document.getElementById('ai-generate-form');
+    if (!form) return;
+    const submitBtn = form.querySelector('.submit-btn');
+
+    // 只有点击提交按钮才走 AJAX
+    submitBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+
+        const prompt = form.querySelector('#prompt');
+        if (!prompt || !prompt.value.trim()) {
+            if (window.Toast) Toast.show('请输入 Prompt', 'error');
+            return;
+        }
+
+        const origText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ 提交中...';
+
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                redirect: 'manual'
+            });
+            if (res.ok || res.type === 'opaqueredirect' || res.status === 0 || res.status === 303 || res.status === 302) {
+                if (window.Toast) Toast.show('任务已提交！', 'success');
+                if (window.pollQueue) window.pollQueue();
+            } else {
+                let msg = '提交失败';
+                try { msg = await res.text(); } catch(_) {}
+                if (window.Toast) Toast.show(msg, 'error');
+            }
+        } catch (e) {
+            console.error('Submit error:', e);
+            if (window.Toast) Toast.show('提交出错，请重试', 'error');
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = origText;
+    });
+
+    // 阻止表单默认提交（防止回车提交）
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+    });
+})();
+
 async function deleteJob(jobId) {
     if (!confirm('确定要删除这个任务吗？')) return;
     try {
@@ -1081,6 +1161,7 @@ async function moveJob(jobId, direction) {
     }
 
     let polling = false;
+    window.pollQueue = pollQueue;
     async function pollQueue() {
         if (polling) return;
         polling = true;

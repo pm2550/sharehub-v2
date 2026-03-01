@@ -683,15 +683,170 @@
     animation: spin 0.6s linear infinite;
 }
 
+/* ========== 汉堡菜单 ========== */
+.hamburger-btn {
+    display: none; /* 桌面端隐藏 */
+    flex-direction: column;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 1002;
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--color-text-primary);
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+/* 导航抽屉 */
+.nav-drawer {
+    display: contents; /* 桌面端：透明包装，不影响布局 */
+}
+
+.nav-drawer-backdrop {
+    display: none; /* 桌面端隐藏 */
+}
+
+body.nav-open {
+    overflow: hidden; /* 抽屉打开时防止背景滚动 */
+}
+
+/* 抽屉文字在桌面端隐藏 */
+.drawer-text {
+    display: none;
+}
+
 /* ========== 响应式 ========== */
 @media (max-width: 768px) {
+    /* 汉堡按钮显示 */
+    .hamburger-btn {
+        display: flex;
+    }
+
+    /* 导航抽屉 → 侧边滑出面板 */
+    .nav-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 280px;
+        height: 100vh;
+        background: var(--color-bg-primary);
+        backdrop-filter: blur(10px);
+        box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        z-index: 1001;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        padding: var(--spacing-xl) 0;
+    }
+
+    .nav-drawer.open {
+        transform: translateX(0);
+    }
+
+    /* 抽屉背景遮罩 */
+    .nav-drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .nav-drawer-backdrop.open {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* 导航菜单垂直布局 */
     .navbar-nav {
+        flex-direction: column;
         gap: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    .navbar-nav li {
+        width: 100%;
     }
 
     .nav-link {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        font-size: 0.875rem;
+        display: block;
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .nav-link:hover {
+        background: var(--color-bg-secondary);
+    }
+
+    /* 右侧操作区域 */
+    .nav-drawer > .flex {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-sm);
+        padding: var(--spacing-lg);
+        margin-top: auto;
+        border-top: 1px solid var(--color-border);
+    }
+
+    /* 显示抽屉文字 */
+    .drawer-text {
+        display: inline;
+        margin-left: 8px;
+    }
+
+    /* 抽屉内图标链接统一样式 */
+    .nav-drawer .notification-icon,
+    .nav-drawer .theme-toggle {
+        display: block;
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--color-border);
+        text-decoration: none;
+        background: transparent;
+        border-left: none;
+        border-right: none;
+        border-top: none;
+        border-radius: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    .nav-drawer .notification-icon:hover,
+    .nav-drawer .theme-toggle:hover {
+        background: var(--color-bg-secondary);
+    }
+
+    /* 隐藏抽屉内的通知badge（小圆点） */
+    .nav-drawer .notification-badge {
+        display: none !important;
+    }
+
+    /* 抽屉内所有nav-link样式统一 */
+    .nav-drawer .nav-link {
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .nav-drawer .btn {
+        width: 100%;
+        justify-content: center;
     }
 
     .gallery {
@@ -701,11 +856,52 @@
 
     .gallery-item img,
     .gallery-item video {
-        height: 180px;
+        height: 160px;
     }
 
+    /* 快速上传按钮 - 移动端缩小为圆形 */
     .quick-fab {
-        right: 14px;
-        bottom: 14px;
+        right: 16px;
+        bottom: 16px;
+        width: 56px;
+        height: 56px;
+        min-height: 56px;
+        padding: 0;
+        font-size: 1.5rem;
+        border-radius: 50%;
+    }
+
+    /* 隐藏按钮内的文字，只保留加号图标 */
+    .quick-fab .btn-text {
+        display: none;
+    }
+
+    /* Modal 全宽 */
+    .modal-card {
+        width: 95%;
+        margin: var(--spacing-md);
+    }
+
+    /* 按钮触控目标 */
+    .btn {
+        min-height: 44px;
+    }
+
+    /* Page header */
+    .page-header {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+
+    /* Pagination */
+    .pagination {
+        gap: var(--spacing-xs);
+        font-size: 0.875rem;
+    }
+
+    .pagination .page-link {
+        min-width: 36px;
+        height: 36px;
+        padding: 0 var(--spacing-xs);
     }
 }

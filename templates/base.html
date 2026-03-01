@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ site_title }} - 现代化内容分享平台">
     <title>{% block title %}{{ site_title }}{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+    <link rel="icon" type="image/png" sizes="64x64" href="/static/images/favicon-64.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/favicon-180.png">
+    <link rel="shortcut icon" href="/static/images/favicon.ico">
 
     <!-- CSS -->
     <link rel="stylesheet" href="/static/css/variables.css">
@@ -31,81 +36,98 @@
                 <span>{{ site_title }}</span>
             </a>
 
-            <!-- 导航菜单 -->
-            <ul class="navbar-nav">
-                <li>
-                    <a href="/" class="nav-link {% if active == 'home' %}active{% endif %}">
-                        首页
-                    </a>
-                </li>
-                <li>
-                    <a href="/images" class="nav-link {% if active == 'images' %}active{% endif %}">
-                        图片
-                    </a>
-                </li>
-                <li>
-                    <a href="/videos" class="nav-link {% if active == 'videos' %}active{% endif %}">
-                        视频
-                    </a>
-                </li>
-                <li>
-                    <a href="/ai" class="nav-link {% if active == 'ai' %}active{% endif %}">
-                        AI生成
-                    </a>
-                </li>
-                {% if current_user %}
-                <li>
-                    <a href="/following-feed" class="nav-link {% if active == 'following-feed' %}active{% endif %}">
-                        👥 关注
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
+            <!-- 汉堡菜单按钮 (仅移动端显示) -->
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="菜单">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
 
-            <!-- 右侧操作 -->
-            <div class="flex items-center gap-sm">
-                <!-- 暗色模式切换 -->
-                <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
-                    🌙
-                </button>
+            <!-- 导航抽屉 (桌面端透明容器, 移动端侧边抽屉) -->
+            <div class="nav-drawer" id="nav-drawer">
+                <!-- 导航菜单 -->
+                <ul class="navbar-nav">
+                    <li>
+                        <a href="/" class="nav-link {% if active == 'home' %}active{% endif %}">
+                            首页
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/images" class="nav-link {% if active == 'images' %}active{% endif %}">
+                            图片
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/videos" class="nav-link {% if active == 'videos' %}active{% endif %}">
+                            视频
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/ai" class="nav-link {% if active == 'ai' %}active{% endif %}">
+                            AI生成
+                        </a>
+                    </li>
+                    {% if current_user %}
+                    <li>
+                        <a href="/following-feed" class="nav-link {% if active == 'following-feed' %}active{% endif %}">
+                            👥 关注
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
 
-                <!-- 通知图标 -->
-                {% if current_user %}
-                <a href="/notifications" class="notification-icon" id="notification-bell"
-                    style="position: relative; font-size: 1.3rem; text-decoration: none;">
-                    🔔
-                    <span id="notification-badge" class="notification-badge" style="display: none;"></span>
-                </a>
+                <!-- 右侧操作 -->
+                <div class="flex items-center gap-sm">
+                    {% if current_user %}
+                    <!-- 通知图标 -->
+                    <a href="/notifications" class="notification-icon" id="notification-bell"
+                        style="position: relative; font-size: 1.3rem; text-decoration: none;">
+                        🔔 <span class="drawer-text">通知</span>
+                        <span id="notification-badge" class="notification-badge" style="display: none;"></span>
+                    </a>
 
-                <!-- 私信图标 -->
-                <a href="/messages" class="notification-icon" id="message-icon"
-                    style="position: relative; font-size: 1.3rem; text-decoration: none; margin-left: var(--spacing-sm);">
-                    💬
-                    <span id="message-badge" class="notification-badge" style="display: none;"></span>
-                </a>
-                {% endif %}
+                    <!-- 私信图标 -->
+                    <a href="/messages" class="notification-icon" id="message-icon"
+                        style="position: relative; font-size: 1.3rem; text-decoration: none; margin-left: var(--spacing-sm);">
+                        💬 <span class="drawer-text">私信</span>
+                        <span id="message-badge" class="notification-badge" style="display: none;"></span>
+                    </a>
 
-                <!-- 用户菜单 -->
-                {% if current_user %}
-                <a href="/me" class="nav-link {% if active == 'me' %}active{% endif %}">
-                    我的
-                </a>
-                <a href="/favorites" class="nav-link {% if active == 'favorites' %}active{% endif %}">
-                    🔖 收藏
-                </a>
-                {% if current_user['is_admin'] %}
-                <span class="badge badge-primary">管理员</span>
-                {% endif %}
-                <form action="/logout" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-sm btn-ghost">登出</button>
-                </form>
-                {% else %}
-                <a href="/login" class="btn btn-sm btn-secondary">登录</a>
-                <a href="/register" class="btn btn-sm btn-primary">注册</a>
-                {% endif %}
+                    <!-- 我的 -->
+                    <a href="/me" class="nav-link {% if active == 'me' %}active{% endif %}">
+                        👤 我的
+                    </a>
+
+                    <!-- 收藏 -->
+                    <a href="/favorites" class="nav-link {% if active == 'favorites' %}active{% endif %}">
+                        🔖 收藏
+                    </a>
+                    {% endif %}
+
+                    <!-- 暗色模式切换 -->
+                    <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+                        🌙 <span class="drawer-text">切换主题</span>
+                    </button>
+
+                    <!-- 用户菜单 -->
+                    {% if current_user %}
+                    {% if current_user['is_admin'] %}
+                    <span class="badge badge-primary">管理员</span>
+                    {% endif %}
+                    <form action="/logout" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-sm btn-ghost">登出</button>
+                    </form>
+                    {% else %}
+                    <a href="/login" class="btn btn-sm btn-secondary">登录</a>
+                    <a href="/register" class="btn btn-sm btn-primary">注册</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
+
+    <!-- 导航抽屉背景遮罩 (仅移动端) -->
+    <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
 
     <!-- 主内容区 -->
     <main class="container main-content"
@@ -114,6 +136,7 @@
     </main>
 
     {% include "_quick_upload_modal.html" %}
+    {% include "_confirm_delete_modal.html" %}
 
     <!-- 页脚 -->
     <footer class="site-footer">
@@ -131,7 +154,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 {{ site_title }} &middot; Powered by ShareHub 2.0</p>
+                <p>&copy; 2024 {{ site_title }} &middot; Powered by PM ShareHub 2.0</p>
             </div>
         </div>
     </footer>
@@ -239,10 +262,50 @@
     <script src="/static/js/like.js"></script>
     <script src="/static/js/favorite.js"></script>
     <script src="/static/js/lightbox.js"></script>
+
+    <!-- 汉堡菜单交互 -->
+    <script>
+        (function () {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const navDrawer = document.getElementById('nav-drawer');
+            const backdrop = document.getElementById('nav-drawer-backdrop');
+
+            if (!hamburgerBtn || !navDrawer || !backdrop) return;
+
+            function openDrawer() {
+                navDrawer.classList.add('open');
+                backdrop.classList.add('open');
+                document.body.classList.add('nav-open');
+            }
+
+            function closeDrawer() {
+                navDrawer.classList.remove('open');
+                backdrop.classList.remove('open');
+                document.body.classList.remove('nav-open');
+            }
+
+            hamburgerBtn.addEventListener('click', function () {
+                if (navDrawer.classList.contains('open')) {
+                    closeDrawer();
+                } else {
+                    openDrawer();
+                }
+            });
+
+            backdrop.addEventListener('click', closeDrawer);
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && navDrawer.classList.contains('open')) {
+                    closeDrawer();
+                }
+            });
+        })();
+    </script>
     <script src="/static/js/confirm-dialog.js"></script>
     <script src="/static/js/comment.js"></script>
     <script src="/static/js/ai-poll.js"></script>
     <script src="/static/quick-modal.js"></script>
+    <script src="/static/js/confirm-delete.js"></script>
 
     <!-- 通知未读数轮询 -->
     {% if current_user %}

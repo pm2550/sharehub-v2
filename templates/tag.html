@@ -2,6 +2,17 @@
 
 {% block title %}#{{ tag['name'] }} - {{ site_title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .page-header {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="tag-page">
     <div class="page-header" style="margin-bottom: var(--spacing-xl);">

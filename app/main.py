@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
     logger.info("Running database migrations...")
     run_migrations(settings.DATABASE_PATH)
 
-    # 启动AI Worker
+    # 启动AI Worker（RunPod 主 + 本地 A1111 备）
     logger.info("Starting AI worker...")
     start_ai_worker(
         db_path=settings.DATABASE_PATH,
@@ -55,6 +55,10 @@ async def lifespan(app: FastAPI):
         poll_interval=settings.AI_POLL_INTERVAL_SECONDS,
         max_retries=settings.AI_MAX_RETRIES,
         job_timeout=settings.AI_JOB_TIMEOUT_SECONDS,
+        runpod_api_key=settings.RUNPOD_API_KEY,
+        runpod_endpoint_id=settings.RUNPOD_ENDPOINT_ID,
+        runpod_daily_limit=settings.RUNPOD_DAILY_LIMIT,
+        runpod_timeout=settings.RUNPOD_TIMEOUT,
     )
 
     logger.info(f"{settings.APP_NAME} started successfully!")

@@ -245,6 +245,29 @@
                 rgba(36, 36, 36, 0.9) 0%,
                 rgba(45, 45, 45, 0.7) 100%);
     }
+
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+            gap: var(--spacing-md);
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+        }
+
+        .profile-stats {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .profile-actions {
+            flex-wrap: wrap;
+            gap: var(--spacing-xs);
+        }
+    }
 </style>
 {% endblock %}
 

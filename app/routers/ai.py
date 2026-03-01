@@ -12,12 +12,15 @@ from app.services.ai_queue import (
     submit_job, list_jobs, average_job_seconds, seconds_to_text,
     delete_ai_job, move_job_up, move_job_down, queue_runtime_map
 )
+from app.services.runpod import get_user_daily_remaining, is_runpod_available
 from app.services.auth import now_iso
 
 settings = get_settings()
 templates = Jinja2Templates(directory=str(settings.APP_DIR / "templates"))
 
 router = APIRouter(tags=["ai"])
+
+_runpod_enabled = is_runpod_available(settings.RUNPOD_API_KEY, settings.RUNPOD_ENDPOINT_ID)
 
 
 def render(request: Request, template: str, context: dict, db = None):
@@ -64,7 +67,13 @@ def ai_page(
     queue_jobs = list_jobs(db, limit=30)
     active_queue_jobs = [j for j in queue_jobs if j["status"] in ("running", "pending")]
     my_queue_jobs = list_jobs(db, limit=20, only_user_id=user["id"]) if user else []
-    avg_seconds = average_job_seconds(db)
+    avg_seconds = average_job_seconds(db, backend="runpod")
+
+    # RunPod 每日剩余
+    runpod_remaining = None
+    runpod_daily_limit = settings.RUNPOD_DAILY_LIMIT
+    if _runpod_enabled and user:
+        runpod_remaining = get_user_daily_remaining(db, user["id"], runpod_daily_limit)
 
     return render(
         request,
@@ -72,7 +81,7 @@ def ai_page(
         {
             "active": "ai",
             "page_title": "AI 生图",
-            "page_desc": "A1111 生成并发布的图片",
+            "page_desc": "AI 生成并发布的图片",
             "posts": posts,
             "pagination": pagination,
             "queue_jobs": queue_jobs,
@@ -81,6 +90,9 @@ def ai_page(
             "avg_seconds": avg_seconds,
             "avg_text": seconds_to_text(avg_seconds),
             "queued": queued,
+            "runpod_enabled": _runpod_enabled,
+            "runpod_remaining": runpod_remaining,
+            "runpod_daily_limit": runpod_daily_limit,
         },
         db,
     )
@@ -92,8 +104,8 @@ def generate_image(
     prompt: str = Form(...),
     negative_prompt: str = Form(""),
     steps: int = Form(40),
-    width: int = Form(1024),
-    height: int = Form(768),
+    width: int = Form(768),
+    height: int = Form(1024),
     next: str = Form("/ai"),
     user: dict = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db_conn)
@@ -103,9 +115,9 @@ def generate_image(
     if not prompt:
         raise HTTPException(status_code=400, detail="Prompt is required")
 
-    safe_steps = max(1, min(40, steps))
+    safe_steps = max(1, min(50, steps))
     safe_width = max(256, min(1024, width))
-    safe_height = max(256, min(768, height))
+    safe_height = max(256, min(1024, height))
 
     submit_job(
         db,
@@ -184,10 +196,17 @@ def api_ai_queue(
     queue_jobs = list_jobs(db, limit=30)
     active = [j for j in queue_jobs if j["status"] in ("running", "pending")]
     my_jobs = list_jobs(db, limit=20, only_user_id=user["id"]) if user else []
-    avg = average_job_seconds(db)
+    avg = average_job_seconds(db, backend="runpod")
 
-    return JSONResponse(content={
+    result = {
         "active_jobs": active,
         "my_jobs": my_jobs,
         "avg_text": seconds_to_text(avg),
-    })
+    }
+
+    if _runpod_enabled and user:
+        result["runpod_remaining"] = get_user_daily_remaining(
+            db, user["id"], settings.RUNPOD_DAILY_LIMIT
+        )
+
+    return JSONResponse(content=result)

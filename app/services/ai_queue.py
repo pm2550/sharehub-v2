@@ -153,35 +153,59 @@ def get_ai_job_by_id(conn: sqlite3.Connection, job_id: int) -> Optional[sqlite3.
     ).fetchone()
 
 
-def average_job_seconds(conn: sqlite3.Connection, history_limit: int = 30) -> int:
-    """计算平均任务耗时"""
-    rows = conn.execute(
-        """
-        SELECT started_unix, finished_unix
-        FROM ai_jobs
-        WHERE status='done'
-          AND started_unix IS NOT NULL
-          AND finished_unix IS NOT NULL
-          AND finished_unix > started_unix
-        ORDER BY id DESC
-        LIMIT ?
-        """,
-        (history_limit,),
-    ).fetchall()
+def average_job_seconds(conn: sqlite3.Connection, backend: Optional[str] = None, history_limit: int = 30) -> int:
+    """计算平均任务耗时，可按后端过滤"""
+    # 默认值：RunPod ~15s，本地 ~120s
+    defaults = {"runpod": 15, "local": 120}
+
+    if backend:
+        rows = conn.execute(
+            """
+            SELECT started_unix, finished_unix
+            FROM ai_jobs
+            WHERE status='done'
+              AND backend = ?
+              AND started_unix IS NOT NULL
+              AND finished_unix IS NOT NULL
+              AND finished_unix > started_unix
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (backend, history_limit),
+        ).fetchall()
+        fallback = defaults.get(backend, 30)
+    else:
+        rows = conn.execute(
+            """
+            SELECT started_unix, finished_unix
+            FROM ai_jobs
+            WHERE status='done'
+              AND started_unix IS NOT NULL
+              AND finished_unix IS NOT NULL
+              AND finished_unix > started_unix
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (history_limit,),
+        ).fetchall()
+        fallback = 30
 
     if not rows:
-        return 50  # 默认50秒
+        return fallback
 
     total = sum(int(r["finished_unix"]) - int(r["started_unix"]) for r in rows)
     avg = max(5, int(total / len(rows)))
     return avg
 
 
-def queue_runtime_map(conn: sqlite3.Connection, avg_seconds: int) -> dict:
-    """计算队列中每个任务的预估完成时间"""
+def queue_runtime_map(conn: sqlite3.Connection) -> dict:
+    """计算队列中每个任务的预估完成时间（按后端区分）"""
+    avg_runpod = average_job_seconds(conn, backend="runpod")
+    avg_local = average_job_seconds(conn, backend="local")
+
     waiting = conn.execute(
         """
-        SELECT id, status, started_unix
+        SELECT id, status, started_unix, backend
         FROM ai_jobs
         WHERE status IN ('running', 'pending') AND cancelled = 0
         ORDER BY CASE status WHEN 'running' THEN 0 ELSE 1 END, priority ASC, id ASC
@@ -195,19 +219,21 @@ def queue_runtime_map(conn: sqlite3.Connection, avg_seconds: int) -> dict:
     for row in waiting:
         job_id = int(row["id"])
         status = row["status"]
+        backend = row["backend"] or "runpod"
+        avg = avg_runpod if backend == "runpod" else avg_local
 
         if status == "running":
             started_unix = row["started_unix"] or now_unix()
             elapsed = max(0, now_unix() - int(started_unix))
-            remaining = max(5, avg_seconds - elapsed)
+            remaining = max(3, avg - elapsed)
             mapping[job_id] = {
                 "position": 0,
                 "eta_seconds": remaining,
                 "eta_text": seconds_to_text(remaining),
             }
-        else:  # pending
+        else:  # pending — 默认用 RunPod 预估（因为是主后端）
             position += 1
-            remaining += avg_seconds
+            remaining += avg_runpod
             mapping[job_id] = {
                 "position": position,
                 "eta_seconds": remaining,
@@ -254,8 +280,8 @@ def list_jobs(
         tuple(params),
     ).fetchall()
 
-    avg = average_job_seconds(conn)
-    queue_map = queue_runtime_map(conn, avg)
+    avg = average_job_seconds(conn, backend="runpod")
+    queue_map = queue_runtime_map(conn)
 
     jobs = []
     for row in rows:

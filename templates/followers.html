@@ -2,6 +2,20 @@
 
 {% block title %}{{ profile_user['display_name'] or profile_user['username'] }} 的粉丝 - {{ site_title }}{% endblock %}
 
+{% block extra_css %}
+<style>
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
+    }
+
+    .card {
+        padding: var(--spacing-sm);
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="followers-page">
     <div class="page-header" style="margin-bottom: var(--spacing-xl);">

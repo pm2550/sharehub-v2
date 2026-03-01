@@ -173,6 +173,41 @@
 .download-link:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+    .post-detail {
+        padding: var(--spacing-md);
+    }
+
+    .post-media img,
+    .post-media video {
+        max-height: 50vh;
+    }
+
+    .post-header h1 {
+        font-size: 1.25rem;
+    }
+
+    .post-meta {
+        flex-wrap: wrap;
+        font-size: 0.875rem;
+        gap: var(--spacing-xs);
+    }
+
+    .post-actions {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+    }
+
+    .comment-form textarea {
+        min-height: 80px;
+    }
+
+    .comment-item {
+        padding: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+    }
+}
 </style>
 {% endblock %}
 
@@ -309,7 +344,7 @@
     <div class="danger-zone">
         <h2>⚠️ 危险操作</h2>
         <p style="margin-bottom: var(--spacing-md);">删除后无法恢复，请谨慎操作。</p>
-        <form action="/post/{{ post['id'] }}/delete" method="post" onsubmit="return confirm('确定要删除这个帖子吗？此操作无法撤销！');">
+        <form action="/post/{{ post['id'] }}/delete" method="post" data-confirm-delete="确定要删除这个帖子吗？此操作无法撤销！">
             <button type="submit" class="btn btn-danger">
                 {% if is_owner %}删除此帖（作者）{% else %}删除此帖（管理员）{% endif %}
             </button>

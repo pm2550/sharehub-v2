@@ -1,0 +1,23 @@
+<!-- 确认删除模态框 -->
+<div class="modal-backdrop" id="confirm-delete-modal" role="dialog" aria-labelledby="confirm-delete-title" aria-hidden="true">
+    <div class="modal-card">
+        <div class="modal-head">
+            <h3 id="confirm-delete-title">⚠️ 确认删除</h3>
+            <button type="button" class="modal-close" data-modal-close="confirm-delete-modal" aria-label="关闭">
+                &times;
+            </button>
+        </div>
+        <div class="modal-body">
+            <p id="confirm-delete-message" style="margin: var(--spacing-md) 0; color: var(--color-text-primary);">
+                确定要删除这个帖子吗？
+            </p>
+            <p style="margin: var(--spacing-sm) 0; color: var(--color-text-muted); font-size: 0.9rem;">
+                此操作无法撤销！
+            </p>
+        </div>
+        <div class="modal-actions" style="display: flex; gap: var(--spacing-sm); justify-content: flex-end; margin-top: var(--spacing-md);">
+            <button type="button" class="btn btn-secondary" data-modal-close="confirm-delete-modal">取消</button>
+            <button type="button" id="confirm-delete-btn" class="btn btn-danger">确定删除</button>
+        </div>
+    </div>
+</div>

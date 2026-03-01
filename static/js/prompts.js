@@ -41,9 +41,9 @@
                 <div class="prompt-item-header">
                     <strong class="prompt-item-name">${escapeHtml(p.name)}</strong>
                     <div class="prompt-item-actions">
-                        <button class="prompt-action-btn load-btn" title="加载" data-id="${p.id}">📥</button>
-                        <button class="prompt-action-btn update-btn" title="覆盖更新" data-id="${p.id}">💾</button>
-                        <button class="prompt-action-btn delete-btn" title="删除" data-id="${p.id}">🗑️</button>
+                        <button type="button" class="prompt-action-btn load-btn" title="加载" data-id="${p.id}">📥</button>
+                        <button type="button" class="prompt-action-btn update-btn" title="覆盖更新" data-id="${p.id}">💾</button>
+                        <button type="button" class="prompt-action-btn delete-btn" title="删除" data-id="${p.id}">🗑️</button>
                     </div>
                 </div>
                 <div class="prompt-item-preview">${escapeHtml(p.prompt.substring(0, 80))}${p.prompt.length > 80 ? '...' : ''}</div>

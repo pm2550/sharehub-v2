@@ -244,6 +244,20 @@ MIGRATIONS: List[str] = [
     """
     ALTER TABLE messages ADD COLUMN post_id INTEGER DEFAULT NULL REFERENCES posts(id) ON DELETE SET NULL;
     """,
+
+    # Version 17: RunPod 后端支持 — ai_jobs 增加 backend 字段 + 每日用量追踪表
+    """
+    ALTER TABLE ai_jobs ADD COLUMN backend TEXT DEFAULT 'local';
+    CREATE TABLE IF NOT EXISTS ai_daily_usage (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        runpod_count INTEGER DEFAULT 0,
+        UNIQUE(user_id, date),
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_ai_daily_usage_user_date ON ai_daily_usage(user_id, date);
+    """,
 ]
 
 

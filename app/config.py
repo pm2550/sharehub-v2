@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """应用配置"""
 
     # 基础配置
-    APP_NAME: str = "ShareHub"
+    APP_NAME: str = "PM ShareHub"
     APP_DIR: Path = Path("/data/sharehub")
 
     # 安全配置（无默认值，强制配置）
@@ -23,13 +23,18 @@ class Settings(BaseSettings):
     # 媒体存储配置
     MEDIA_DIR: str = "/data/sharehub/data/media"
 
-    # AI 配置
+    # AI 配置 — RunPod (主) + 本地 A1111 (备)
+    RUNPOD_API_KEY: str = ""
+    RUNPOD_ENDPOINT_ID: str = ""
+    RUNPOD_DAILY_LIMIT: int = 10  # 每用户每天 RunPod 生成次数
+    RUNPOD_TIMEOUT: int = 120  # RunPod 单次请求超时(秒)
+
     A1111_API_URL: str = "http://127.0.0.1:8188"
     AI_POLL_INTERVAL_SECONDS: float = 1.5
     AI_MAX_RETRIES: int = 3
     AI_DEFAULT_JOB_SECONDS: int = 50
     AI_JOB_HISTORY: int = 30
-    AI_JOB_TIMEOUT_SECONDS: int = 3600  # 仅作安全网，实际靠检测 A1111 状态判断卡住
+    AI_JOB_TIMEOUT_SECONDS: int = 3600
 
     # 文件上传限制
     MAX_IMAGE_SIZE_MB: int = 20
@@ -57,7 +62,7 @@ class Settings(BaseSettings):
     RATE_LIMIT_DEFAULT: str = "60/minute"
 
     # 网站标题
-    SITE_TITLE: str = "ShareHub"
+    SITE_TITLE: str = "PM ShareHub"
 
     class Config:
         env_file = ".env"

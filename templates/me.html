@@ -207,6 +207,12 @@
     gap: var(--spacing-lg);
   }
 
+  .three-column-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+  }
+
   .form-card {
     position: relative;
     padding: var(--spacing-xl);
@@ -500,6 +506,15 @@
     .profile-stats {
       justify-content: center;
     }
+
+    .tab-nav button {
+      font-size: 0.875rem;
+      padding: var(--spacing-sm);
+    }
+
+    .three-column-inputs {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 {% endblock %}
@@ -627,7 +642,7 @@
             <input type="text" id="ai_negative" name="negative_prompt" class="input" />
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--spacing-md);">
+          <div class="three-column-inputs">
             <div class="form-group">
               <label for="ai_steps">Steps</label>
               <input type="number" id="ai_steps" name="steps" value="20" min="1" max="60" class="input" />
@@ -757,7 +772,7 @@
       </div>
 
       <div class="manage-item-actions">
-        <form action="/post/{{ p['id'] }}/delete" method="post" onsubmit="return confirm('确定要删除这个帖子吗？');">
+        <form action="/post/{{ p['id'] }}/delete" method="post" data-confirm-delete="确定要删除这个帖子吗？">
           <button type="submit" class="btn btn-sm btn-danger">删除</button>
         </form>
       </div>

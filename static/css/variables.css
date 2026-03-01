@@ -1,53 +1,68 @@
 /**
- * ShareHub 2.0 - 设计系统变量
- * 支持亮色/暗色双主题
+ * ShareHub 2.0 - Soft Anime Design System (柔美的二次元风格)
+ * 支持亮色/暗色双主题 (Soft Light / Midnight Dream)
  */
 
 :root {
-    /* 亮色主题（默认） */
-    --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f8f9fa;
-    --color-bg-tertiary: #e9ecef;
-    --color-bg-card: #ffffff;
+    /* 亮色主题 - Soft Sakura (默认) */
+    --color-bg-primary: #fff9fb;
+    /* Snow / Soft Pink White */
+    --color-bg-secondary: #fff0f5;
+    /* Lavender Blush */
+    --color-bg-tertiary: #ffe4e1;
+    /* Misty Rose */
+    --color-bg-card: rgba(255, 255, 255, 0.75);
+    /* Glass Effect Base */
     --color-bg-elevated: #ffffff;
 
-    --color-text-primary: #1a1a1a;
-    --color-text-secondary: #4a5568;
-    --color-text-tertiary: #718096;
-    --color-text-muted: #a0aec0;
+    --color-text-primary: #5d4037;
+    /* Warm Brown (Softer than black) */
+    --color-text-secondary: #8d6e63;
+    /* Light Brown */
+    --color-text-tertiary: #bcaaa4;
+    --color-text-muted: #d7ccc8;
 
-    --color-border: #e2e8f0;
-    --color-border-light: #edf2f7;
-    --color-border-focus: #667eea;
+    --color-border: #ffcdd2;
+    /* Soft Pink Border */
+    --color-border-light: #ffEBEE;
+    --color-border-focus: #ff80ab;
+    /* Hot Pink Focus */
 
-    --color-accent: #667eea;
-    --color-accent-hover: #5a67d8;
-    --color-accent-light: #e9ecfd;
+    /* Accent Colors - Gradients often used */
+    --color-accent: #ff80ab;
+    /* Accent Pink */
+    --color-accent-hover: #ff4081;
+    --color-accent-light: #ffcfdd;
 
-    --color-success: #48bb78;
-    --color-success-light: #c6f6d5;
-    --color-warning: #ed8936;
-    --color-warning-light: #feebc8;
-    --color-error: #f56565;
-    --color-error-light: #fed7d7;
-    --color-info: #4299e1;
-    --color-info-light: #bee3f8;
+    /* Functional Colors */
+    --color-success: #a5d6a7;
+    /* Pastel Green */
+    --color-success-light: #e8f5e9;
+    --color-warning: #ffcc80;
+    /* Pastel Orange */
+    --color-warning-light: #fff3e0;
+    --color-error: #ef9a9a;
+    /* Pastel Red */
+    --color-error-light: #ffebee;
+    --color-info: #90caf9;
+    /* Pastel Blue */
+    --color-info-light: #e3f2fd;
 
-    --color-like: #ed64a6;
-    --color-like-bg: #fed7e2;
+    --color-like: #ff4081;
+    --color-like-bg: #fce4ec;
 
-    /* 阴影 */
-    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    /* 阴影 - Soft & Colorful */
+    --shadow-xs: 0 2px 4px 0 rgba(255, 182, 193, 0.2);
+    --shadow-sm: 0 4px 6px -1px rgba(255, 182, 193, 0.3), 0 2px 4px -1px rgba(255, 182, 193, 0.1);
+    --shadow-md: 0 10px 15px -3px rgba(255, 128, 171, 0.2), 0 4px 6px -2px rgba(255, 128, 171, 0.1);
+    --shadow-lg: 0 20px 25px -5px rgba(255, 64, 129, 0.15), 0 10px 10px -5px rgba(255, 64, 129, 0.1);
+    --shadow-xl: 0 25px 50px -12px rgba(255, 64, 129, 0.25);
 
-    /* 圆角 */
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
+    /* 圆角 - Bubbly & Soft */
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
     --radius-full: 9999px;
 
     /* 间距 */
@@ -58,82 +73,90 @@
     --spacing-xl: 2rem;
     --spacing-2xl: 3rem;
 
-    /* 字体 */
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    --font-mono: "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
+    /* 字体 - Rounded & Friendly */
+    --font-sans: "Nunito", "Quicksand", "Varela Round", -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    --font-mono: "SF Mono", "Roboto Mono", monospace;
 
-    /* 过渡 */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* 过渡 - Bouncy & Smooth */
+    --transition-fast: 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Bouncy */
+    --transition-base: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 玻璃拟态模糊 */
+    --blur-strength: 12px;
 }
 
-/* 暗色主题 */
+/* 暗色主题 - Midnight Dream */
 [data-theme="dark"] {
-    --color-bg-primary: #1a1a1a;
-    --color-bg-secondary: #242424;
-    --color-bg-tertiary: #2d2d2d;
-    --color-bg-card: #242424;
-    --color-bg-elevated: #2d2d2d;
+    --color-bg-primary: #2d2436;
+    /* Deep Purple Grey */
+    --color-bg-secondary: #3a2e42;
+    --color-bg-tertiary: #453750;
+    --color-bg-card: rgba(45, 36, 54, 0.7);
+    --color-bg-elevated: #3a2e42;
 
-    --color-text-primary: #f7fafc;
-    --color-text-secondary: #e2e8f0;
-    --color-text-tertiary: #cbd5e0;
-    --color-text-muted: #718096;
+    --color-text-primary: #fce4ec;
+    /* Soft Pink White */
+    --color-text-secondary: #f8bbd0;
+    --color-text-tertiary: #f48fb1;
+    --color-text-muted: #880e4f;
 
-    --color-border: #3a3a3a;
-    --color-border-light: #2d2d2d;
-    --color-border-focus: #7c3aed;
+    --color-border: #5c4b6e;
+    --color-border-light: #453750;
+    --color-border-focus: #ab47bc;
 
-    --color-accent: #7c3aed;
-    --color-accent-hover: #6d28d9;
-    --color-accent-light: #2d1b4e;
+    --color-accent: #ba68c8;
+    /* Light Purple */
+    --color-accent-hover: #ab47bc;
+    --color-accent-light: #4a148c;
 
-    --color-success: #48bb78;
-    --color-success-light: #1e3a2e;
-    --color-warning: #ed8936;
-    --color-warning-light: #3d2817;
-    --color-error: #f56565;
-    --color-error-light: #3d1a1a;
-    --color-info: #4299e1;
-    --color-info-light: #1a2d3d;
+    --color-success: #66bb6a;
+    --color-success-light: #1b5e20;
+    --color-warning: #ffa726;
+    --color-warning-light: #e65100;
+    --color-error: #ef5350;
+    --color-error-light: #b71c1c;
+    --color-info: #42a5f5;
+    --color-info-light: #0d47a1;
 
-    --color-like: #ed64a6;
-    --color-like-bg: #3d1a2d;
+    --color-like: #f06292;
+    --color-like-bg: #880e4f;
 
-    /* 暗色模式下阴影更深 */
-    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    /* 暗色模式下阴影 */
+    --shadow-xs: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
 }
 
 /* 自动跟随系统主题 */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-        --color-bg-primary: #1a1a1a;
-        --color-bg-secondary: #242424;
-        --color-bg-tertiary: #2d2d2d;
-        --color-bg-card: #242424;
-        --color-bg-elevated: #2d2d2d;
+        /* Copy of dark theme vars */
+        --color-bg-primary: #2d2436;
+        --color-bg-secondary: #3a2e42;
+        --color-bg-tertiary: #453750;
+        --color-bg-card: rgba(45, 36, 54, 0.7);
+        --color-bg-elevated: #3a2e42;
 
-        --color-text-primary: #f7fafc;
-        --color-text-secondary: #e2e8f0;
-        --color-text-tertiary: #cbd5e0;
-        --color-text-muted: #718096;
+        --color-text-primary: #fce4ec;
+        --color-text-secondary: #f8bbd0;
+        --color-text-tertiary: #f48fb1;
+        --color-text-muted: #880e4f;
 
-        --color-border: #3a3a3a;
-        --color-border-light: #2d2d2d;
-        --color-border-focus: #7c3aed;
+        --color-border: #5c4b6e;
+        --color-border-light: #453750;
+        --color-border-focus: #ab47bc;
 
-        --color-accent: #7c3aed;
-        --color-accent-hover: #6d28d9;
-        --color-accent-light: #2d1b4e;
+        --color-accent: #ba68c8;
+        --color-accent-hover: #ab47bc;
+        --color-accent-light: #4a148c;
 
-        --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-        --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        --shadow-xs: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+        --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+        --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
     }
 }

@@ -1,23 +1,55 @@
-<header class="wrap topbar">
-  <div>
-    <h1><a href="/">{{ site_title }}</a></h1>
-    <p>分享与创作平台</p>
-  </div>
-  <nav class="nav">
-    <a class="{% if active=='home' %}on{% endif %}" href="/">首页</a>
-    <a class="{% if active=='images' %}on{% endif %}" href="/images">图片</a>
-    <a class="{% if active=='videos' %}on{% endif %}" href="/videos">视频</a>
-    <a class="{% if active=='ai' %}on{% endif %}" href="/ai">AI</a>
-    <a class="{% if active=='me' %}on{% endif %}" href="/me">我的</a>
-  </nav>
-  <div class="auth">
-    {% if current_user %}
-      <a class="btn" href="/user/{{ current_user['username'] }}">{{ current_user['display_name'] or current_user['username'] }}</a>
-      {% if current_user['is_admin'] %}<span class="badge">管理员</span>{% endif %}
-      <form action="/logout" method="post"><button type="submit">登出</button></form>
-    {% else %}
-      <a class="btn" href="/login?next={{ request.url.path if request else '/' }}">登录</a>
-      <a class="btn" href="/register?next={{ request.url.path if request else '/' }}">注册</a>
-    {% endif %}
+<header class="navbar">
+  <div class="navbar-content">
+    <a href="/" class="navbar-brand">
+      <span>✨ {{ site_title }}</span>
+    </a>
+
+    <nav>
+      <ul class="navbar-nav">
+        <li><a class="nav-link {% if active=='home' %}active{% endif %}" href="/">首页</a></li>
+        <li><a class="nav-link {% if active=='images' %}active{% endif %}" href="/images">图片</a></li>
+        <li><a class="nav-link {% if active=='videos' %}active{% endif %}" href="/videos">视频</a></li>
+        <li><a class="nav-link {% if active=='ai' %}active{% endif %}" href="/ai">AI工坊</a></li>
+        <li><a class="nav-link {% if active=='me' %}active{% endif %}" href="/me">我的空间</a></li>
+      </ul>
+    </nav>
+
+    <div class="flex gap-sm items-center">
+      <button class="theme-toggle" id="themeToggle" title="切换主题">
+        <span class="icon">🌸</span>
+      </button>
+
+      {% if current_user %}
+      <a class="btn btn-primary btn-sm" href="/user/{{ current_user['username'] }}">
+        {{ current_user['display_name'] or current_user['username'] }}
+      </a>
+      <form action="/logout" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-ghost btn-sm">登出</button>
+      </form>
+      {% else %}
+      <a class="btn btn-ghost btn-sm" href="/login?next={{ request.url.path if request else '/' }}">登录</a>
+      <a class="btn btn-primary btn-sm" href="/register?next={{ request.url.path if request else '/' }}">注册</a>
+      {% endif %}
+    </div>
   </div>
 </header>
+
+<script>
+  // Theme Toggler Logic (Inline for immediate execution)
+  const toggle = document.getElementById('themeToggle');
+  const root = document.documentElement;
+
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      toggle.querySelector('.icon').textContent = isDark ? '🌸' : '🌙';
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+
+    // Init
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    root.setAttribute('data-theme', savedTheme);
+    toggle.querySelector('.icon').textContent = savedTheme === 'dark' ? '🌙' : '🌸';
+  }
+</script>
