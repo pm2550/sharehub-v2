@@ -80,11 +80,13 @@ def home(request: Request, db: sqlite3.Connection = Depends(get_db_conn)):
         "images": db.execute("SELECT COUNT(*) FROM posts WHERE media_type='image' AND source='upload'").fetchone()[0],
         "videos": db.execute("SELECT COUNT(*) FROM posts WHERE media_type='video'").fetchone()[0],
         "ai": db.execute("SELECT COUNT(*) FROM posts WHERE source='ai'").fetchone()[0],
+        "files": db.execute("SELECT COUNT(*) FROM posts WHERE media_type='file'").fetchone()[0],
     }
 
     recent_images = query_posts(db, "p.media_type='image' AND p.source='upload'", limit=12)
     recent_videos = query_posts(db, "p.media_type='video'", limit=12)
     recent_ai = query_posts(db, "p.source='ai'", limit=12)
+    recent_files = query_posts(db, "p.media_type='file'", limit=12)
 
     return render(
         request,
@@ -95,6 +97,7 @@ def home(request: Request, db: sqlite3.Connection = Depends(get_db_conn)):
             "recent_images": recent_images,
             "recent_videos": recent_videos,
             "recent_ai": recent_ai,
+            "recent_files": recent_files,
         },
         db,
     )
@@ -150,6 +153,43 @@ def videos_page(
         },
         db,
     )
+
+
+@router.get("/files")
+def files_page(
+    request: Request,
+    page: int = Query(1, ge=1),
+    db: sqlite3.Connection = Depends(get_db_conn)
+):
+    """资源区"""
+    where = "p.media_type='file'"
+    total = count_posts(db, where)
+    pagination = build_pagination(page, total, settings.FEED_PAGE_SIZE)
+    posts = query_posts(db, where, limit=settings.FEED_PAGE_SIZE, offset=(pagination["page"] - 1) * settings.FEED_PAGE_SIZE)
+
+    return render(
+        request,
+        "files.html",
+        {
+            "active": "files",
+            "page_title": "资源区",
+            "page_desc": "上传和下载各类文件资源",
+            "posts": posts,
+            "pagination": pagination,
+        },
+        db,
+    )
+
+
+@router.get("/files/media/{filename}")
+def files_media(filename: str):
+    """提供资源文件"""
+    import os
+    safe_name = os.path.basename(filename)
+    file_path = Path(settings.FILES_DIR) / safe_name
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path)
 
 
 @router.get("/user/{username}")
@@ -265,6 +305,8 @@ def post_detail(
         default_back = "/ai"
     elif post["media_type"] == "video":
         default_back = "/videos"
+    elif post["media_type"] == "file":
+        default_back = "/files"
 
     back_url = safe_back(request, default_back)
 

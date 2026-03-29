@@ -30,6 +30,7 @@ def query_posts(
     sql = """
         SELECT p.id, p.user_id, p.title, p.description, p.media_type, p.filename,
                p.thumbnail_path, p.source, p.prompt, p.likes, p.created_at,
+               p.file_size, p.original_filename,
                COALESCE(u.display_name, u.username, 'legacy') AS author,
                COALESCE(u.username, 'legacy') AS author_username,
                COALESCE(u.avatar_path, '') AS author_avatar

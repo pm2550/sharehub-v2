@@ -40,10 +40,10 @@ def validate_media_file(filename: str, content_type: str) -> Tuple[str, str]:
     elif ext in ALLOWED_VIDEO_EXT or ctype.startswith("video/"):
         return "video", ext
     else:
-        raise HTTPException(
-            status_code=400,
-            detail="Only common image/video formats are supported"
-        )
+        # 其他文件类型归入资源区
+        if not ext:
+            ext = ".bin"
+        return "file", ext
 
 
 async def validate_and_read_upload(

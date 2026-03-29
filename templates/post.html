@@ -232,11 +232,44 @@
     <div class="post-media">
         {% if post['media_type'] == 'image' %}
             <img src="/media/{{ post['filename'] }}" alt="{{ post['title'] }}" />
-        {% else %}
+        {% elif post['media_type'] == 'video' %}
             <video src="/media/{{ post['filename'] }}" controls playsinline></video>
             <p style="padding: var(--spacing-md); text-align: center; color: var(--color-text-secondary);">
                 如果无法在线播放，可 <a href="/media/{{ post['filename'] }}" download class="download-link">下载视频</a>
             </p>
+        {% elif post['media_type'] == 'file' %}
+            <div style="padding: var(--spacing-2xl); text-align: center;">
+                {% set ext = post['filename'].rsplit('.', 1)[-1]|lower if '.' in post['filename'] else '' %}
+                <div style="font-size: 4rem; margin-bottom: var(--spacing-md);">
+                    {% if ext in ('pdf',) %}📄
+                    {% elif ext in ('zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz') %}📦
+                    {% elif ext in ('doc', 'docx', 'txt', 'md', 'rtf') %}📝
+                    {% elif ext in ('xls', 'xlsx', 'csv') %}📊
+                    {% elif ext in ('ppt', 'pptx') %}📽️
+                    {% elif ext in ('apk',) %}📱
+                    {% elif ext in ('exe', 'msi', 'dmg', 'deb', 'rpm') %}💿
+                    {% elif ext in ('iso', 'img') %}💾
+                    {% elif ext in ('psd', 'ai', 'sketch', 'fig', 'xd') %}🎨
+                    {% elif ext in ('mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a') %}🎵
+                    {% elif ext in ('json', 'xml', 'yaml', 'yml', 'toml') %}⚙️
+                    {% elif ext in ('py', 'js', 'ts', 'java', 'go', 'rs', 'c', 'cpp', 'h') %}🧑‍💻
+                    {% else %}📎
+                    {% endif %}
+                </div>
+                {% if post['original_filename'] %}
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-sm); word-break: break-all;">{{ post['original_filename'] }}</p>
+                {% endif %}
+                {% if post['file_size'] %}
+                <p style="color: var(--color-text-tertiary); margin-bottom: var(--spacing-lg);">
+                    {% if post['file_size'] >= 1073741824 %}{{ "%.1f"|format(post['file_size'] / 1073741824) }} GB
+                    {% elif post['file_size'] >= 1048576 %}{{ "%.1f"|format(post['file_size'] / 1048576) }} MB
+                    {% elif post['file_size'] >= 1024 %}{{ "%.1f"|format(post['file_size'] / 1024) }} KB
+                    {% else %}{{ post['file_size'] }} B
+                    {% endif %}
+                </p>
+                {% endif %}
+                <a href="/post/{{ post['id'] }}/download" class="btn btn-primary" style="font-size: 1.125rem; padding: var(--spacing-md) var(--spacing-xl);">⬇️ 下载文件</a>
+            </div>
         {% endif %}
     </div>
 
@@ -288,7 +321,7 @@
 
         <!-- Download Button -->
         <a href="/post/{{ post['id'] }}/download" class="btn btn-secondary download-btn">
-            ⬇️ 下载{{ '图片' if post['media_type'] == 'image' else '视频' }}
+            ⬇️ 下载{% if post['media_type'] == 'image' %}图片{% elif post['media_type'] == 'video' %}视频{% else %}文件{% endif %}
         </a>
     </div>
 

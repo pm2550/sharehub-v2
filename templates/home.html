@@ -386,6 +386,11 @@
         <p class="stat-number">{{ stats['videos'] }}</p>
     </div>
     <div class="stat-card">
+        <div class="stat-icon">📁</div>
+        <h3>资源</h3>
+        <p class="stat-number">{{ stats['files'] }}</p>
+    </div>
+    <div class="stat-card">
         <div class="stat-icon">🎨</div>
         <h3>AI 作品</h3>
         <p class="stat-number">{{ stats['ai'] }}</p>
@@ -399,6 +404,7 @@
         <div class="tab-buttons">
             <button type="button" class="active" data-tab="images">📷 图片</button>
             <button type="button" data-tab="videos">🎬 视频</button>
+            <button type="button" data-tab="files">📁 资源</button>
             <button type="button" data-tab="ai">🤖 AI 作品</button>
         </div>
     </div>
@@ -454,6 +460,35 @@
         </div>
         {% else %}
         <div class="empty-state">暂无视频</div>
+        {% endif %}
+    </div>
+
+    <!-- Files Tab -->
+    <div class="tab-panel" id="tab-files">
+        {% if recent_files %}
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+            {% for p in recent_files %}
+            <div style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md) var(--spacing-lg); background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+                <div style="font-size: 1.5rem; width: 36px; text-align: center;">
+                    {% set ext = p['filename'].rsplit('.', 1)[-1]|lower if '.' in p['filename'] else '' %}
+                    {% if ext in ('pdf',) %}📄{% elif ext in ('zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz') %}📦{% elif ext in ('doc', 'docx', 'txt', 'md', 'rtf') %}📝{% elif ext in ('xls', 'xlsx', 'csv') %}📊{% elif ext in ('ppt', 'pptx') %}📽️{% elif ext in ('apk',) %}📱{% elif ext in ('exe', 'msi', 'dmg') %}💿{% elif ext in ('mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a') %}🎵{% else %}📎{% endif %}
+                </div>
+                <a href="/post/{{ p['id'] }}" style="flex: 1; min-width: 0; text-decoration: none; color: inherit;">
+                    <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ p['title'] }}</div>
+                    <div style="font-size: 0.8125rem; color: var(--color-text-tertiary);">
+                        👤 {{ p['author'] }}
+                        {% if p['file_size'] %} · {% if p['file_size'] >= 1048576 %}{{ "%.1f"|format(p['file_size'] / 1048576) }} MB{% elif p['file_size'] >= 1024 %}{{ "%.1f"|format(p['file_size'] / 1024) }} KB{% else %}{{ p['file_size'] }} B{% endif %}{% endif %}
+                    </div>
+                </a>
+                <a href="/post/{{ p['id'] }}/download" class="btn btn-primary" style="font-size: 0.8125rem; padding: 4px 12px; flex-shrink: 0;">⬇️</a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="view-more">
+            <a href="/files">查看更多资源 →</a>
+        </div>
+        {% else %}
+        <div class="empty-state">暂无资源文件</div>
         {% endif %}
     </div>
 

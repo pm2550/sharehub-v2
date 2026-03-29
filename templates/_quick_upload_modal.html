@@ -15,8 +15,8 @@
       <input type="hidden" name="next" value="{{ next_path }}" />
       <label>标题<input name="title" required /></label>
       <label>描述<input name="description" /></label>
-      <label>文件<input type="file" name="media" accept="image/*,video/mp4,video/webm,video/quicktime,video/x-m4v" required /></label>
-      <p class="sub">支持图片和视频（mp4/webm/mov/m4v）。视频会显示在视频页。</p>
+      <label>文件<input type="file" name="media" accept="*/*" required /></label>
+      <p class="sub">支持图片、视频和各类文件。图片/视频显示在对应页面，其他文件显示在资源区。</p>
       <button type="submit">上传并发布</button>
     </form>
   </div>

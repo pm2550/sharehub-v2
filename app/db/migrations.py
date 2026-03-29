@@ -258,6 +258,12 @@ MIGRATIONS: List[str] = [
     );
     CREATE INDEX IF NOT EXISTS idx_ai_daily_usage_user_date ON ai_daily_usage(user_id, date);
     """,
+
+    # Version 18: 资源区（云盘）— posts 增加 file_size 和 original_filename 字段
+    """
+    ALTER TABLE posts ADD COLUMN file_size INTEGER DEFAULT NULL;
+    ALTER TABLE posts ADD COLUMN original_filename TEXT DEFAULT NULL;
+    """,
 ]
 
 

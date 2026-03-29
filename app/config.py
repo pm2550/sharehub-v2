@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # 媒体存储配置
     MEDIA_DIR: str = "/data/sharehub/data/media"
+    FILES_DIR: str = "/data2/files"
 
     # AI 配置 — RunPod (主) + 本地 A1111 (备)
     RUNPOD_API_KEY: str = ""
