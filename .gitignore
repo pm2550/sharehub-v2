@@ -19,10 +19,17 @@ ENV/
 .env.local
 
 # Database
+# 注意: "*.db" 挡不住 SQLite 的 WAL/SHM 边车文件 (app.db-wal / app.db-shm),
+# 它们曾因此被误提交进公开仓库 —— 必须显式列出
+data/app.db
+data/app.db-shm
+data/app.db-wal
 data/sharehub.db
 data/sharehub.db-shm
 data/sharehub.db-wal
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 *.sqlite3
 
@@ -57,3 +64,7 @@ Thumbs.db
 
 # Node modules (if any)
 node_modules/
+
+# 本地备份目录
+templates.bak-*/
+*.bak-*/
