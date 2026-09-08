@@ -1,17 +1,30 @@
-"""上传路由"""
+"""上传路由 — PM Drive 后端版本（单请求整包上传）
 
-from fastapi import APIRouter, Request, File, Form, UploadFile, Depends, HTTPException
+大文件走 /api/upload/* 的分片链路（见 routers/upload_chunked.py）。这里保留
+整包上传作为无 JS 环境的回退，媒体后处理和分片链路共用 services/uploads.py。
+
+设计：
+  - file 类型（zip/exe 等）: 流式直送 PM Drive，不落本地磁盘
+  - video 类型: 落 /tmp 处理（ffmpeg 转码），上传到 PM Drive，删临时
+  - image 类型: 落 /tmp 处理（EXIF 剥离 + 生成缩略图），上传原图到 PM Drive，
+    缩略图复制到 MEDIA_DIR 本地保留（feed 频繁访问）
+"""
+
+from fastapi import APIRouter, Request, Form, UploadFile, File, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 import sqlite3
-import shutil
 from pathlib import Path
 import uuid
+import mimetypes
+import logging
 
 from app.config import get_settings
 from app.dependencies import require_auth, get_db_conn
-from app.services.media import validate_media_file, transcode_video, strip_exif, generate_thumbnails, get_video_duration
+from app.services.media import validate_media_file
 from app.services.auth import now_iso
+from app.services import pmdrive, uploads
 
+logger = logging.getLogger("sharehub.upload")
 settings = get_settings()
 
 router = APIRouter(tags=["upload"])
@@ -21,6 +34,20 @@ def safe_next(target: str) -> str:
     if not target or not target.startswith("/") or target.startswith("//"):
         return "/"
     return target
+
+
+def _tmp_dir() -> Path:
+    d = Path(settings.TMP_DIR)
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+async def _iter_upload_chunks(media: UploadFile, chunk_size: int = 1024 * 1024):
+    while True:
+        buf = await media.read(chunk_size)
+        if not buf:
+            break
+        yield buf
 
 
 @router.post("/upload")
@@ -33,122 +60,88 @@ async def upload(
     user: dict = Depends(require_auth),
     db: sqlite3.Connection = Depends(get_db_conn)
 ):
-    """处理文件上传"""
+    """处理文件上传 — 全部存到 PM Drive"""
     media_type, ext = validate_media_file(media.filename or "", media.content_type or "")
 
     thumbnail_path = None
+    preview_path = None
     file_size = None
     original_filename = None
+    pmdrive_uri = None
 
     if media_type == "file":
-        # === 资源文件上传 ===
-        files_dir = Path(settings.FILES_DIR)
-        files_dir.mkdir(parents=True, exist_ok=True)
-
-        # 检查磁盘可用空间（至少保留 100MB）
-        disk = shutil.disk_usage(str(files_dir))
-        if disk.free < 100 * 1024 * 1024:
-            raise HTTPException(status_code=507, detail="磁盘空间不足，无法上传")
-
+        # === 资源文件: 流式直送 Cloudreve ===
         original_filename = media.filename or "unknown"
         unique_name = f"{uuid.uuid4().hex}{ext}"
-        file_path = files_dir / unique_name
 
-        total_size = 0
-        with file_path.open("wb") as f:
-            while True:
-                chunk = await media.read(1024 * 1024)
-                if not chunk:
-                    break
-                total_size += len(chunk)
-                # 每写入 10MB 检查一次磁盘空间
-                if total_size % (10 * 1024 * 1024) == 0:
-                    remaining = shutil.disk_usage(str(files_dir)).free
-                    if remaining < 100 * 1024 * 1024:
-                        f.close()
-                        file_path.unlink(missing_ok=True)
-                        raise HTTPException(status_code=507, detail="磁盘空间不足，上传中断")
-                f.write(chunk)
+        # 拿总大小 (UploadFile.file 是 SpooledTemporaryFile, seek 是 O(1))
+        media.file.seek(0, 2)
+        total_size = media.file.tell()
+        media.file.seek(0)
+
+        mime_type = media.content_type or mimetypes.guess_type(original_filename)[0] or "application/octet-stream"
+
+        try:
+            pmdrive_uri = await pmdrive.upload_stream(
+                unique_name, total_size, _iter_upload_chunks(media), mime_type
+            )
+        except pmdrive.PMDriveError as e:
+            logger.error("pmdrive upload failed: %s", e)
+            raise HTTPException(status_code=502, detail=f"云存储上传失败: {e}")
 
         file_size = total_size
 
-    elif media_type == "video":
-        media_dir = Path(settings.MEDIA_DIR)
-        media_dir.mkdir(parents=True, exist_ok=True)
-        max_bytes = settings.MAX_VIDEO_SIZE_MB * 1024 * 1024
-
-        base = uuid.uuid4().hex
-        raw_name = f"{base}_raw{ext or '.bin'}"
-        raw_path = media_dir / raw_name
-        unique_name = f"{base}.mp4"
-        file_path = media_dir / unique_name
-
-        total_size = 0
-        with raw_path.open("wb") as f:
-            while True:
-                chunk = await media.read(1024 * 1024)
-                if not chunk:
-                    break
-                total_size += len(chunk)
-                if total_size > max_bytes:
-                    f.close()
-                    raw_path.unlink(missing_ok=True)
-                    raise HTTPException(status_code=413, detail=f"视频文件过大，最大 {settings.MAX_VIDEO_SIZE_MB}MB")
-                f.write(chunk)
-
-        duration = get_video_duration(str(raw_path))
-        if duration > settings.MAX_VIDEO_DURATION_SECONDS:
-            raw_path.unlink(missing_ok=True)
-            raise HTTPException(
-                status_code=400,
-                detail=f"视频时长 {int(duration)} 秒，超过限制（最长 {settings.MAX_VIDEO_DURATION_SECONDS} 秒）"
-            )
-
-        try:
-            transcode_video(raw_path, file_path)
-        finally:
-            if raw_path.exists():
-                raw_path.unlink()
     else:
-        # === 图片上传 ===
-        media_dir = Path(settings.MEDIA_DIR)
-        media_dir.mkdir(parents=True, exist_ok=True)
-        max_bytes = settings.MAX_IMAGE_SIZE_MB * 1024 * 1024
+        # === 图片/视频: 落 /tmp，再走和分片链路共用的后处理管线 ===
+        tmp_dir = _tmp_dir()
+        base = uuid.uuid4().hex
+        unique_name = f"{base}.mp4" if media_type == "video" else f"{base}{ext or '.bin'}"
+        raw_path = tmp_dir / f"{base}_raw{ext or '.bin'}"
+        max_bytes = (
+            settings.MAX_VIDEO_SIZE_MB if media_type == "video" else settings.MAX_IMAGE_SIZE_MB
+        ) * 1024 * 1024
 
-        unique_name = f"{uuid.uuid4().hex}{ext or '.bin'}"
-        file_path = media_dir / unique_name
         total_size = 0
-        with file_path.open("wb") as f:
-            while True:
-                chunk = await media.read(1024 * 1024)
-                if not chunk:
-                    break
-                total_size += len(chunk)
-                if total_size > max_bytes:
-                    f.close()
-                    file_path.unlink(missing_ok=True)
-                    raise HTTPException(status_code=413, detail=f"图片文件过大，最大 {settings.MAX_IMAGE_SIZE_MB}MB")
-                f.write(chunk)
-
         try:
-            strip_exif(str(file_path))
-        except Exception as e:
-            print(f"Warning: Failed to strip EXIF: {e}")
+            with raw_path.open("wb") as f:
+                while True:
+                    chunk = await media.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    total_size += len(chunk)
+                    if total_size > max_bytes:
+                        # 复用 check_size 抛 413，文案和分片链路保持一致
+                        uploads.check_size(media_type, total_size)
+                    f.write(chunk)
 
-        try:
-            thumbs = generate_thumbnails(str(file_path), str(media_dir))
-            if thumbs and "md" in thumbs:
-                thumbnail_path = thumbs["md"]
-        except Exception as e:
-            print(f"Warning: Failed to generate thumbnails: {e}")
+            if media_type == "video":
+                result = await uploads.process_video(raw_path, unique_name)
+            else:
+                mime_type = (
+                    media.content_type
+                    or mimetypes.guess_type(unique_name)[0]
+                    or "application/octet-stream"
+                )
+                result = await uploads.process_image(raw_path, unique_name, mime_type)
+
+            pmdrive_uri = result["pmdrive_uri"]
+            thumbnail_path = result["thumbnail_path"]
+            preview_path = result["preview_path"]
+            file_size = result["file_size"]
+
+        except pmdrive.PMDriveError as e:
+            logger.error("pmdrive %s upload failed: %s", media_type, e)
+            raise HTTPException(status_code=502, detail=f"云存储上传失败: {e}")
+        finally:
+            raw_path.unlink(missing_ok=True)
 
     # 保存到数据库
     db.execute(
         """
-        INSERT INTO posts(user_id, title, description, media_type, filename, thumbnail_path, file_size, original_filename, source, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'upload', ?)
+        INSERT INTO posts(user_id, title, description, media_type, filename, thumbnail_path, preview_path, file_size, original_filename, pmdrive_uri, source, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'upload', ?)
         """,
-        (user["id"], title.strip()[:120] or "Untitled", description.strip()[:1000], media_type, unique_name, thumbnail_path, file_size, original_filename, now_iso()),
+        (user["id"], title.strip()[:120] or "Untitled", description.strip()[:1000], media_type, unique_name, thumbnail_path, preview_path, file_size, original_filename, pmdrive_uri, now_iso()),
     )
 
     target = safe_next(next)

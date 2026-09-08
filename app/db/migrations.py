@@ -1,10 +1,82 @@
 """数据库迁移系统"""
 
 import logging
+import sqlite3
 from typing import List
 from app.db.connection import get_db
 
 logger = logging.getLogger("sharehub.migrations")
+
+# 基础表 —— 原本建在老单体 app.py 的 init_db() 里。模块化重构后 main.py 只调
+# run_migrations()，没人再调 init_db()，于是全新部署会在 migration 1 的
+# "CREATE INDEX ON posts" 上直接失败（posts 表根本不存在）。
+# 这里在跑版本化迁移之前无条件执行一遍，全部 IF NOT EXISTS，对已有库是 no-op。
+BASE_SCHEMA = """
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL UNIQUE,
+    display_name TEXT,
+    bio TEXT,
+    password_hash TEXT NOT NULL,
+    is_admin INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    title TEXT NOT NULL,
+    description TEXT,
+    media_type TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    source TEXT NOT NULL DEFAULT 'upload',
+    prompt TEXT,
+    likes INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER,
+    author TEXT,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS post_likes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(post_id, user_id),
+    FOREIGN KEY(post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS ai_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    prompt TEXT NOT NULL,
+    negative_prompt TEXT,
+    steps INTEGER NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    started_at TEXT,
+    finished_at TEXT,
+    started_unix INTEGER,
+    finished_unix INTEGER,
+    result_post_id INTEGER,
+    error TEXT,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(result_post_id) REFERENCES posts(id)
+);
+"""
 
 # 迁移列表 - 每个字符串是一个版本的 SQL 语句集合
 MIGRATIONS: List[str] = [
@@ -264,12 +336,65 @@ MIGRATIONS: List[str] = [
     ALTER TABLE posts ADD COLUMN file_size INTEGER DEFAULT NULL;
     ALTER TABLE posts ADD COLUMN original_filename TEXT DEFAULT NULL;
     """,
+
+    # Version 19: PM Drive 后端 — posts 增加 pmdrive_uri 字段存 Cloudreve URI
+    """
+    ALTER TABLE posts ADD COLUMN pmdrive_uri TEXT DEFAULT NULL;
+    CREATE INDEX IF NOT EXISTS idx_posts_filename ON posts(filename);
+    """,
+
+    # Version 20: 分片上传会话 — 大文件后台上传 + 断点续传
+    """
+    CREATE TABLE IF NOT EXISTS upload_sessions (
+        id TEXT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        media_type TEXT NOT NULL,
+        original_filename TEXT NOT NULL,
+        stored_filename TEXT NOT NULL,
+        mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+        total_size INTEGER NOT NULL,
+        chunk_size INTEGER NOT NULL,
+        total_chunks INTEGER NOT NULL,
+        received_chunks INTEGER NOT NULL DEFAULT 0,
+        pmdrive_session_id TEXT DEFAULT NULL,
+        pmdrive_uri TEXT DEFAULT NULL,
+        tmp_path TEXT DEFAULT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        status TEXT NOT NULL DEFAULT 'uploading',
+        error TEXT DEFAULT NULL,
+        post_id INTEGER DEFAULT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_upload_sessions_user ON upload_sessions(user_id, status);
+    CREATE INDEX IF NOT EXISTS idx_upload_sessions_updated ON upload_sessions(updated_at);
+    """,
+
+    # Version 21: 补齐 posts.preview_path（视频循环预览片段路径）
+    # 这一列历史上是直接在生产库 ALTER 加的，从没进过迁移列表 —— 生产有、
+    # 全新部署没有，导致新环境一上传就 "no column named preview_path"。
+    # 生产库跑到这里会因为列已存在而报 duplicate column，由 runner 容错跳过。
+    """
+    ALTER TABLE posts ADD COLUMN preview_path TEXT DEFAULT NULL;
+    """,
+
+    # Version 22: 补齐 idx_tags_name —— 同样是历史上手工建在生产库、
+    # 从没进过迁移列表的对象（全量 schema 对比时抓出来的）
+    """
+    CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
+    """,
 ]
 
 
 def run_migrations(db_path: str):
     """运行所有未应用的迁移"""
     with get_db(db_path) as conn:
+        # 基础表必须先于版本化迁移建好（migration 1 就要在 posts 上建索引）
+        conn.executescript(BASE_SCHEMA)
+        conn.commit()
+
         # 创建版本追踪表
         conn.execute("""
             CREATE TABLE IF NOT EXISTS _schema_version (
@@ -297,8 +422,18 @@ def run_migrations(db_path: str):
                         # 分号分隔的多条语句
                         for statement in sql.strip().split(";"):
                             statement = statement.strip()
-                            if statement:
+                            if not statement:
+                                continue
+                            try:
                                 conn.execute(statement)
+                            except sqlite3.OperationalError as e:
+                                # SQLite 的 ALTER TABLE ADD COLUMN 没有 IF NOT EXISTS。
+                                # 列已存在 = 这条迁移的效果早就在库里（历史上手工加过），
+                                # 跳过即可，不然老库一升级就起不来。
+                                if "duplicate column name" in str(e).lower():
+                                    logger.info("  ↷ 列已存在，跳过: %s", statement[:70])
+                                else:
+                                    raise
 
                     # 记录版本
                     conn.execute(

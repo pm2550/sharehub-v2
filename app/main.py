@@ -18,6 +18,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.config import get_settings
 from app.db.migrations import run_migrations
@@ -95,6 +96,7 @@ def create_app() -> FastAPI:
 
     # 速率限制
     app.state.limiter = limiter
+    app.add_middleware(SlowAPIMiddleware)
 
     @app.exception_handler(RateLimitExceeded)
     async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -106,11 +108,10 @@ def create_app() -> FastAPI:
 
     # 静态文件
     app.mount("/static", StaticFiles(directory=str(settings.APP_DIR / "static")), name="static")
-    app.mount("/media", StaticFiles(directory=settings.MEDIA_DIR), name="media")
 
     # 注册路由
     from app.routers import (
-        auth, pages, upload, ai, comments, users, posts, likes,
+        auth, pages, upload, upload_chunked, ai, comments, users, posts, likes,
         search, tags, follows, notifications, admin, api, prompts,
         favorites, messages
     )
@@ -118,6 +119,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router)
     app.include_router(pages.router)
     app.include_router(upload.router)
+    app.include_router(upload_chunked.router)
     app.include_router(ai.router)
     app.include_router(comments.router)
     app.include_router(users.router)

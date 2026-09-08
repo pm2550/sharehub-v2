@@ -1,0 +1,208 @@
+/* 上传任务面板 — 右下角悬浮，参考 Cloudreve 的任务队列 */
+
+.upload-panel {
+    position: fixed;
+    right: var(--spacing-lg);
+    bottom: var(--spacing-lg);
+    z-index: 1200;
+    width: 380px;
+    max-width: calc(100vw - 2 * var(--spacing-md));
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    display: none;
+}
+
+.upload-panel.on {
+    display: block;
+    animation: upload-panel-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes upload-panel-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.upload-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.upload-panel-title {
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.upload-panel-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.upload-panel-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 1.125rem;
+    line-height: 1;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.upload-panel-btn:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+}
+
+.upload-panel-body {
+    max-height: min(420px, 50vh);
+    overflow-y: auto;
+}
+
+.upload-panel.collapsed .upload-panel-body {
+    display: none;
+}
+
+.upload-task {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.upload-task:last-child {
+    border-bottom: none;
+}
+
+.upload-task-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.upload-task-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.upload-task-controls {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-shrink: 0;
+}
+
+.upload-task-btn {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+}
+
+.upload-task-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.upload-task-bar {
+    height: 6px;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-xs);
+}
+
+.upload-task-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+    border-radius: var(--radius-full);
+    transition: width 200ms linear;
+}
+
+.upload-task.is-done .upload-task-fill {
+    background: var(--color-success);
+}
+
+.upload-task.is-error .upload-task-fill {
+    background: var(--color-error);
+}
+
+.upload-task.is-paused .upload-task-fill {
+    background: var(--color-warning);
+}
+
+.upload-task-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    font-size: 0.8125rem;
+    color: var(--color-text-tertiary);
+}
+
+.upload-task-meta a {
+    color: var(--color-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.upload-task-meta a:hover {
+    text-decoration: underline;
+}
+
+.upload-task-status {
+    white-space: nowrap;
+}
+
+.upload-task.is-error .upload-task-status {
+    color: var(--color-error);
+}
+
+.upload-resume-hint {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-warning-light);
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.upload-resume-hint strong {
+    color: var(--color-text-primary);
+}
+
+.upload-resume-hint .upload-task-btn {
+    margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 600px) {
+    .upload-panel {
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        bottom: var(--spacing-sm);
+        width: auto;
+    }
+}

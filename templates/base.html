@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="/static/css/like-button.css">
     <link rel="stylesheet" href="/static/css/bookmark-button.css">
     <link rel="stylesheet" href="/static/css/lightbox.css">
+    <link rel="stylesheet" href="/static/css/uploader.css">
     {% block extra_css %}{% endblock %}
 
     <!-- 主题脚本（防止闪烁，必须在head中同步加载） -->
@@ -142,6 +143,7 @@
 
     {% include "_quick_upload_modal.html" %}
     {% include "_confirm_delete_modal.html" %}
+    {% if current_user %}{% include "_upload_panel.html" %}{% endif %}
 
     <!-- 页脚 -->
     <footer class="site-footer">
@@ -311,6 +313,7 @@
     <script src="/static/js/ai-poll.js"></script>
     <script src="/static/quick-modal.js"></script>
     <script src="/static/js/confirm-delete.js"></script>
+    {% if current_user %}<script src="/static/js/uploader.js"></script>{% endif %}
 
     <!-- 通知未读数轮询 -->
     {% if current_user %}
