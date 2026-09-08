@@ -2,14 +2,18 @@
 
 from fastapi import APIRouter, Request, Query, Depends, HTTPException
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 import sqlite3
+import logging
 from pathlib import Path
 from urllib.parse import urlparse
 
 from app.config import get_settings
 from app.dependencies import get_db_conn, get_current_user
 from app.services.posts import query_posts, count_posts
+from app.services import pmdrive
+
+logger = logging.getLogger("sharehub.pages")
 
 settings = get_settings()
 templates = Jinja2Templates(directory=str(settings.APP_DIR / "templates"))
@@ -182,10 +186,23 @@ def files_page(
 
 
 @router.get("/files/media/{filename}")
-def files_media(filename: str):
-    """提供资源文件"""
+async def files_media(filename: str, db: sqlite3.Connection = Depends(get_db_conn)):
+    """提供资源文件 — 新帖子走 PM Drive 跳转，旧帖子走本地"""
     import os
     safe_name = os.path.basename(filename)
+
+    post = db.execute(
+        "SELECT pmdrive_uri FROM posts WHERE filename = ? AND media_type = 'file' LIMIT 1",
+        (safe_name,)
+    ).fetchone()
+    if post and post["pmdrive_uri"]:
+        try:
+            url = await pmdrive.get_source_url(post["pmdrive_uri"])
+            return RedirectResponse(url=url, status_code=302)
+        except pmdrive.PMDriveError as e:
+            logger.error("files_media pmdrive error: %s", e)
+            raise HTTPException(status_code=502, detail="云存储暂不可用")
+
     file_path = Path(settings.FILES_DIR) / safe_name
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
@@ -269,7 +286,9 @@ def post_detail(
 
     comments = db.execute(
         """
-        SELECT COALESCE(u.display_name, u.username, c.author, 'legacy') AS author,
+        SELECT c.id,
+               c.user_id,
+               COALESCE(u.display_name, u.username, c.author, 'legacy') AS author,
                COALESCE(u.username, 'legacy') AS author_username,
                c.content,
                c.created_at
@@ -327,12 +346,39 @@ def post_detail(
     )
 
 
-@router.get("/media/{filename}")
-def media_file(filename: str):
-    """提供媒体文件"""
+@router.get("/media/{filename:path}")
+async def media_file(filename: str, db: sqlite3.Connection = Depends(get_db_conn)):
+    """提供媒体文件
+
+    查找顺序：
+    1. 本地 MEDIA_DIR（缩略图、头像、旧帖子的原图/视频，含子目录如 thumbnails/）
+    2. posts 表查 filename 关联的 pmdrive_uri → 302 跳转到 PM Drive
+    """
     import os
-    safe_name = os.path.basename(filename)
-    file_path = Path(settings.MEDIA_DIR) / safe_name
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    return FileResponse(file_path)
+    safe_path = Path(filename)
+    if '..' in safe_path.parts:
+        raise HTTPException(status_code=400, detail="Invalid path")
+    file_path = (Path(settings.MEDIA_DIR) / safe_path).resolve()
+    if not file_path.is_relative_to(Path(settings.MEDIA_DIR).resolve()):
+        raise HTTPException(status_code=400, detail="Invalid path")
+
+    if file_path.exists():
+        return FileResponse(file_path)
+
+    # 回退到 PM Drive 查找 — 先尝试完整路径（AI 帖子 filename 带 "originals/" 前缀），
+    # 再回退到 basename（老的裸文件名）。
+    base_name = os.path.basename(filename)
+    post = db.execute(
+        "SELECT pmdrive_uri FROM posts "
+        "WHERE (filename = ? OR filename = ?) AND media_type IN ('video','image') LIMIT 1",
+        (filename, base_name)
+    ).fetchone()
+    if post and post["pmdrive_uri"]:
+        try:
+            url = await pmdrive.get_source_url(post["pmdrive_uri"])
+            return RedirectResponse(url=url, status_code=302)
+        except pmdrive.PMDriveError as e:
+            logger.error("media_file pmdrive error: %s", e)
+            raise HTTPException(status_code=502, detail="云存储暂不可用")
+
+    raise HTTPException(status_code=404, detail="File not found")

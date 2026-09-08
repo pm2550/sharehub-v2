@@ -59,6 +59,19 @@ def me_page(
         (user["id"], settings.ME_PAGE_SIZE, (pagination["page"] - 1) * settings.ME_PAGE_SIZE),
     ).fetchall()
 
+    my_comments = db.execute(
+        """
+        SELECT c.id, c.post_id, c.content, c.created_at,
+               COALESCE(p.title, '(帖子已删除)') AS post_title
+        FROM comments c
+        LEFT JOIN posts p ON p.id = c.post_id
+        WHERE c.user_id = ?
+        ORDER BY c.id DESC
+        LIMIT 100
+        """,
+        (user["id"],),
+    ).fetchall()
+
     my_jobs = list_jobs(db, limit=30, only_user_id=user["id"])
     queue_active = [j for j in my_jobs if j["status"] in ("pending", "running")]
 
@@ -68,6 +81,7 @@ def me_page(
         {
             "active": "me",
             "my_posts": my_posts,
+            "my_comments": my_comments,
             "my_jobs": my_jobs,
             "queue_active_count": len(queue_active),
             "pagination": pagination,

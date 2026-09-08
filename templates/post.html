@@ -136,9 +136,20 @@
     color: var(--color-accent);
 }
 
+.comment-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
 .comment-date {
     color: var(--color-text-tertiary);
     font-size: 0.875rem;
+}
+
+.comment-delete-btn {
+    font-size: 0.8125rem;
+    padding: 4px 12px;
 }
 
 .comment-content {
@@ -358,7 +369,16 @@
                             <span class="comment-author">{{ c['author'] }}</span>
                         {% endif %}
                     </div>
-                    <span class="comment-date">{{ c['created_at'] }}</span>
+                    <div class="comment-meta">
+                        <span class="comment-date">{{ c['created_at'] }}</span>
+                        {% if is_admin %}
+                        <form action="/comment/{{ c['id'] }}/delete" method="post"
+                              data-confirm-delete="确定要删除这条评论吗？此操作无法撤销！">
+                            <input type="hidden" name="next" value="/post/{{ post['id'] }}" />
+                            <button type="submit" class="btn btn-sm btn-danger comment-delete-btn">删除（管理员）</button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="comment-content">
                     {{ c['content'] }}

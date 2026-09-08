@@ -339,6 +339,25 @@
     text-align: right;
   }
 
+  /* ========== Comment Items ========== */
+  .comment-post-link {
+    font-weight: 700;
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .comment-post-link:hover {
+    text-decoration: underline;
+  }
+
+  .comment-text {
+    margin-top: var(--spacing-xs);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
   /* ========== Status Badges ========== */
   .status-badge {
     display: inline-flex;
@@ -545,6 +564,7 @@
     <button class="tab-button" data-tab="create">➕ 发布内容</button>
     <button class="tab-button" data-tab="queue">🤖 AI 队列</button>
     <button class="tab-button active" data-tab="manage">📦 内容管理</button>
+    <button class="tab-button" data-tab="comments">💬 我的评论</button>
   </div>
 
   <!-- Profile Tab -->
@@ -620,7 +640,7 @@
             <label for="upload_media">文件</label>
             <input type="file" id="upload_media" name="media"
               accept="image/*,video/mp4,video/webm,video/quicktime,video/x-m4v" required class="input" />
-            <span class="hint">支持图片和视频（mp4/webm/mov/m4v）</span>
+            <span class="hint">支持图片和视频（mp4/webm/mov/m4v）。分片后台上传，进度见右下角任务面板</span>
           </div>
 
           <button type="submit" class="btn btn-primary">上传</button>
@@ -745,9 +765,9 @@
     <div class="manage-item">
       <div class="manage-item-thumb">
         {% if p['media_type'] == 'image' %}
-        <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" />
+        <img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" />
         {% else %}
-        <video src="/media/{{ p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
+        <video src="/media/{{ p['preview_path'] or p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
         {% endif %}
       </div>
 
@@ -805,6 +825,36 @@
     </div>
     {% endif %}
   </div>
+
+  <!-- Comments Tab -->
+  <div class="tab-content" id="tab-comments">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
+      <h3>我的评论</h3>
+      <span class="badge">{{ my_comments|length }} 条</span>
+    </div>
+
+    {% if my_comments %}
+    {% for c in my_comments %}
+    <div class="queue-item">
+      <div class="queue-item-info">
+        <a href="/post/{{ c['post_id'] }}" class="comment-post-link">{{ c['post_title'] }}</a>
+        <span style="color: var(--color-text-tertiary); font-size: 0.875rem;"> · {{ c['created_at'] }}</span>
+        <div class="comment-text">{{ c['content'] }}</div>
+      </div>
+      <div class="queue-item-status">
+        <form action="/comment/{{ c['id'] }}/delete" method="post" data-confirm-delete="确定要删除这条评论吗？">
+          <input type="hidden" name="next" value="/me#comments" />
+          <button type="submit" class="btn btn-sm btn-danger">删除</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-state">
+      <p>你还没有发表过评论。</p>
+    </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
@@ -840,7 +890,7 @@
 
     // Handle hash on load
     const hash = window.location.hash.substring(1);
-    if (hash && ['profile', 'create', 'queue', 'manage'].includes(hash)) {
+    if (hash && ['profile', 'create', 'queue', 'manage', 'comments'].includes(hash)) {
       switchTab(hash);
     }
 
