@@ -21,8 +21,15 @@ class Settings(BaseSettings):
     DATABASE_PATH: str = "/data/sharehub/data/app.db"
 
     # 媒体存储配置
-    MEDIA_DIR: str = "/data/sharehub/data/media"
-    FILES_DIR: str = "/data2/files"
+    MEDIA_DIR: str = "/data/sharehub/data/media"  # 缩略图和旧视频/图片回退
+    FILES_DIR: str = "/data2/files"  # 兼容旧 DB 记录的本地文件回退
+    TMP_DIR: str = "/tmp/sharehub"  # 视频/图片处理临时目录 (tmpfs)
+
+    # PM Drive (Cloudreve v4) 存储后端
+    PMDRIVE_BASE_URL: str = "https://drive.pm2550.com"
+    PMDRIVE_EMAIL: str = ""
+    PMDRIVE_PASSWORD: str = ""
+    PMDRIVE_ROOT_DIR: str = "cloudreve://my/sharehub"
 
     # AI 配置 — RunPod (主) + 本地 A1111 (备)
     RUNPOD_API_KEY: str = ""

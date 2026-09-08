@@ -95,7 +95,7 @@ def get_following_feed_posts(
     return conn.execute(
         """
         SELECT p.id, p.user_id, p.title, p.description, p.media_type, p.filename,
-               p.thumbnail_path, p.source, p.prompt, p.likes, p.created_at,
+               p.thumbnail_path, p.preview_path, p.source, p.prompt, p.likes, p.created_at,
                COALESCE(u.display_name, u.username, 'legacy') AS author,
                COALESCE(u.username, 'legacy') AS author_username,
                COALESCE(u.avatar_path, '') AS author_avatar

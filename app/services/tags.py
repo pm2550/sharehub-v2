@@ -92,7 +92,7 @@ def get_posts_by_tag(conn: sqlite3.Connection, tag_id: int, limit: int = 20, off
     return conn.execute(
         """
         SELECT p.id, p.title, p.description, p.media_type, p.filename,
-               p.thumbnail_path, p.likes, p.created_at,
+               p.thumbnail_path, p.preview_path, p.likes, p.created_at,
                COALESCE(u.display_name, u.username, 'legacy') AS author,
                COALESCE(u.username, 'legacy') AS author_username
         FROM posts p

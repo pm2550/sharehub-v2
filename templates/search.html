@@ -63,7 +63,7 @@
                                     <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
                                 {% endif %}
                             {% else %}
-                                <video src="/media/{{ p['filename'] }}" muted playsinline preload="metadata"></video>
+                                <video src="/media/{{ p['preview_path'] or p['filename'] }}" muted playsinline preload="metadata"></video>
                             {% endif %}
                             <div class="gallery-item-overlay">
                                 <h3>{{ p['title'] }}</h3>

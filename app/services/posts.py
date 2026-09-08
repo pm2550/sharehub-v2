@@ -29,7 +29,7 @@ def query_posts(
     """
     sql = """
         SELECT p.id, p.user_id, p.title, p.description, p.media_type, p.filename,
-               p.thumbnail_path, p.source, p.prompt, p.likes, p.created_at,
+               p.thumbnail_path, p.preview_path, p.source, p.prompt, p.likes, p.created_at,
                p.file_size, p.original_filename,
                COALESCE(u.display_name, u.username, 'legacy') AS author,
                COALESCE(u.username, 'legacy') AS author_username,
@@ -84,6 +84,7 @@ def create_post(
     source: str = "upload",
     prompt: Optional[str] = None,
     thumbnail_path: Optional[str] = None,
+    preview_path: Optional[str] = None,
 ) -> int:
     """
     创建新帖子
@@ -94,8 +95,8 @@ def create_post(
     conn.execute(
         """
         INSERT INTO posts(user_id, title, description, media_type, filename,
-                          source, prompt, thumbnail_path, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                          source, prompt, thumbnail_path, preview_path, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             user_id,
@@ -106,6 +107,7 @@ def create_post(
             source,
             prompt[:2000] if prompt else None,
             thumbnail_path,
+            preview_path,
             now_iso(),
         ),
     )

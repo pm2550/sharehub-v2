@@ -958,7 +958,7 @@
         {% for p in posts %}
         <div class="gallery-item">
             <a href="/post/{{ p['id'] }}">
-                <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                <img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
                 <div class="gallery-item-overlay">
                     <h3>{{ p['title'] }}</h3>
                     <div class="gallery-item-meta">

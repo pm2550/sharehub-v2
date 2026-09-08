@@ -59,7 +59,7 @@ def _enrich_post_info(conn: sqlite3.Connection, msg_dict: dict) -> dict:
     if post_id:
         post = conn.execute(
             """
-            SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path,
+            SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path, p.preview_path,
                    p.likes, p.source,
                    COALESCE(u.display_name, u.username, 'legacy') AS author
             FROM posts p

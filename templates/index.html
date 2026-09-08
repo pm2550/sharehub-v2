@@ -64,9 +64,9 @@
       <article class="item">
         <a href="/post/{{ p['id'] }}">
           {% if p['media_type'] == 'image' %}
-            <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+            <img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
           {% else %}
-            <video class="card-video" src="/media/{{ p['filename'] }}" autoplay loop muted playsinline preload="auto"></video>
+            <video class="card-video" src="/media/{{ p['preview_path'] or p['filename'] }}" autoplay loop muted playsinline preload="auto"></video>
           {% endif %}
           <div class="meta">
             <h3>{{ p['title'] }}</h3>

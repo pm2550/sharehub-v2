@@ -47,7 +47,7 @@
                 <a href="/post/{{ m.post.id }}" class="shared-post-card">
                     <div class="shared-post-thumb">
                         {% if m.post.media_type == 'video' %}
-                        <video src="/media/{{ m.post.filename }}" muted preload="metadata" class="shared-post-media"></video>
+                        <video src="/media/{{ m.post.preview_path or m.post.filename }}" muted preload="metadata" class="shared-post-media"></video>
                         <div class="play-badge">▶</div>
                         {% elif m.post.thumbnail_path %}
                         <img src="/media/{{ m.post.thumbnail_path }}" alt="{{ m.post.title }}" class="shared-post-media" loading="lazy">

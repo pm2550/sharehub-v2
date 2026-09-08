@@ -151,7 +151,7 @@ async def send_msg(
         if post_id:
             post = db.execute(
                 """
-                SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path,
+                SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path, p.preview_path,
                        p.likes, p.source,
                        COALESCE(u.display_name, u.username, 'legacy') AS author
                 FROM posts p
@@ -231,7 +231,7 @@ def api_share_posts(
     # 自己的帖子
     own_posts = db.execute(
         """
-        SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path,
+        SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path, p.preview_path,
                p.source, 'own' AS share_source
         FROM posts p
         WHERE p.user_id = ? AND p.title LIKE ?
@@ -244,7 +244,7 @@ def api_share_posts(
     # 收藏的帖子
     fav_posts = db.execute(
         """
-        SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path,
+        SELECT p.id, p.title, p.media_type, p.filename, p.thumbnail_path, p.preview_path,
                p.source, 'favorite' AS share_source
         FROM favorites f
         JOIN posts p ON p.id = f.post_id

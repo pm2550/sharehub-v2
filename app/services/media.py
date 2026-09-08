@@ -127,7 +127,8 @@ def generate_thumbnails(original_path: str, media_dir: str, sizes: dict = None) 
         {size_key: relative_path} 字典
     """
     if sizes is None:
-        sizes = {"sm": (300, 300), "md": (600, 600)}
+        sizes = {"sm": (400, 400), "md": (1280, 1280)}
+    quality_map = {"sm": 85, "md": 92}
 
     try:
         img = Image.open(original_path)
@@ -144,7 +145,7 @@ def generate_thumbnails(original_path: str, media_dir: str, sizes: dict = None) 
             full_path = os.path.join(media_dir, rel_path)
 
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            thumb.save(full_path, "WEBP", quality=82)
+            thumb.save(full_path, "WEBP", quality=quality_map.get(key, 88), method=5)
 
             thumbs[key] = rel_path
 
@@ -253,6 +254,59 @@ def transcode_video(input_path: str, output_path: str):
 
     # 成功，替换为最终文件
     shutil.move(tmp_out, output_path)
+
+
+def generate_video_preview(input_path: str, media_dir: str) -> str:
+    """生成视频的循环预览片段 (4s, 720p, CRF 质量编码 H.264, 无音频).
+
+    Args:
+        input_path: 源视频完整路径（通常是转码后的 mp4）
+        media_dir: MEDIA_DIR 根目录
+
+    Returns:
+        相对路径 "previews/<uuid>.mp4"，失败返回 ""
+    """
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if not ffmpeg_bin:
+        return ""
+
+    previews_dir = os.path.join(media_dir, "previews")
+    os.makedirs(previews_dir, exist_ok=True)
+    name = f"{uuid.uuid4().hex}.mp4"
+    out_path = os.path.join(previews_dir, name)
+
+    cmd = [
+        ffmpeg_bin, "-y",
+        "-i", str(input_path),
+        "-t", "4",
+        # 长边不超过 1280（scale=w:h，-2 表示保持比例且为偶数），垂直视频会被缩到 720 高
+        "-vf", "scale='if(gt(iw,ih),min(1280,iw),-2)':'if(gt(iw,ih),-2,min(1280,ih))'",
+        "-c:v", "libx264",
+        "-crf", "22",
+        "-preset", "medium",
+        "-profile:v", "high",
+        "-level", "4.1",
+        "-movflags", "+faststart",
+        "-an",
+        "-pix_fmt", "yuv420p",
+        out_path,
+    ]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    except Exception as e:
+        print(f"Warning: video preview ffmpeg spawn failed: {e}")
+        return ""
+
+    if proc.returncode != 0 or not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
+        try:
+            if os.path.exists(out_path):
+                os.unlink(out_path)
+        except Exception:
+            pass
+        print(f"Warning: video preview failed: {proc.stderr[-500:] if proc.stderr else '(no stderr)'}")
+        return ""
+
+    return f"previews/{name}"
 
 
 def delete_media_file(media_dir: str, rel_path: str):

@@ -7,6 +7,7 @@ import sqlite3
 
 from app.config import get_settings
 from app.dependencies import get_db_conn, get_current_user
+from app.middleware.rate_limit import limiter
 from app.services.auth import (
     register_user,
     authenticate_user,
@@ -47,6 +48,7 @@ def register_page(request: Request, next: str = "/", db: sqlite3.Connection = De
 
 
 @router.post("/register")
+@limiter.limit(settings.RATE_LIMIT_LOGIN)
 def register(
     request: Request,
     username: str = Form(...),
@@ -73,6 +75,7 @@ def login_page(request: Request, next: str = "/", db: sqlite3.Connection = Depen
 
 
 @router.post("/login")
+@limiter.limit(settings.RATE_LIMIT_LOGIN)
 def login(
     request: Request,
     username: str = Form(...),

@@ -416,7 +416,7 @@
             {% for p in recent_images %}
             <div class="gallery-item">
                 <a href="/post/{{ p['id'] }}">
-                    <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                    <img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
                     <div class="gallery-item-overlay">
                         <h3>{{ p['title'] }}</h3>
                         <div class="gallery-item-meta">
@@ -443,7 +443,7 @@
             {% for p in recent_videos %}
             <div class="gallery-item">
                 <a href="/post/{{ p['id'] }}">
-                    <video src="/media/{{ p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
+                    <video src="/media/{{ p['preview_path'] or p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
                     <div class="gallery-item-overlay">
                         <h3>{{ p['title'] }}</h3>
                         <div class="gallery-item-meta">
@@ -499,7 +499,7 @@
             {% for p in recent_ai %}
             <div class="gallery-item">
                 <a href="/post/{{ p['id'] }}">
-                    <img src="/media/{{ p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
+                    <img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" />
                     <div class="gallery-item-overlay">
                         <h3>{{ p['title'] }}</h3>
                         <div class="gallery-item-meta">

@@ -22,7 +22,7 @@ def search_posts(conn: sqlite3.Connection, query: str, limit: int = 20) -> List[
     results = conn.execute(
         """
         SELECT p.id, p.title, p.description, p.media_type, p.filename,
-               p.thumbnail_path, p.likes, p.created_at,
+               p.thumbnail_path, p.preview_path, p.likes, p.created_at,
                COALESCE(u.display_name, u.username, 'legacy') AS author,
                COALESCE(u.username, 'legacy') AS author_username
         FROM posts_fts
