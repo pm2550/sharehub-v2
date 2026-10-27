@@ -1,380 +1,44 @@
+{% import '_studio.html' as ui with context %}
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{{ site_title }} - 现代化内容分享平台">
-    <title>{% block title %}{{ site_title }}{% endblock %}</title>
-    <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
-    <link rel="icon" type="image/png" sizes="64x64" href="/static/images/favicon-64.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/favicon-180.png">
-    <link rel="shortcut icon" href="/static/images/favicon.ico">
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="/static/css/variables.css">
-    <link rel="stylesheet" href="/static/css/base.css">
-    <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/toast.css">
-    <link rel="stylesheet" href="/static/css/like-button.css">
-    <link rel="stylesheet" href="/static/css/bookmark-button.css">
-    <link rel="stylesheet" href="/static/css/lightbox.css">
-    <link rel="stylesheet" href="/static/css/uploader.css">
-    {% block extra_css %}{% endblock %}
-
-    <!-- 主题脚本（防止闪烁，必须在head中同步加载） -->
-    <script src="/static/js/theme.js"></script>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="description" content="{{ site_title|default('PM ShareHub', true) }} · 分享创作，发现灵感">
+ <title>{% block title %}{{ site_title|default('PM ShareHub', true) }}{% endblock %}</title>
+ <link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg"><link rel="apple-touch-icon" href="/static/images/favicon-180.png">
+ {% for sheet in ['variables','base','components','toast','like-button','bookmark-button','lightbox','uploader'] %}<link rel="stylesheet" href="/static/css/{{ sheet }}.css">{% endfor %}
+ {% block extra_css %}{% endblock %}
+ <link rel="stylesheet" href="/static/css/studio.css?v=20260926-2"><link rel="stylesheet" href="/static/css/suite.css?v=20260926-2">
+ <script src="/static/js/theme.js?v=20260926-2"></script>
+ <link rel="stylesheet" href="/static/css/xiaoxing-motion.css?v=20260926-9">
 </head>
-
-<body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="navbar-content">
-            <!-- Logo -->
-            <a href="/" class="navbar-brand">
-                <span>✨</span>
-                <span>{{ site_title }}</span>
-            </a>
-
-            <!-- 汉堡菜单按钮 (仅移动端显示) -->
-            <button class="hamburger-btn" id="hamburger-btn" aria-label="菜单">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
-            <!-- 导航抽屉 (桌面端透明容器, 移动端侧边抽屉) -->
-            <div class="nav-drawer" id="nav-drawer">
-                <!-- 导航菜单 -->
-                <ul class="navbar-nav">
-                    <li>
-                        <a href="/" class="nav-link {% if active == 'home' %}active{% endif %}">
-                            首页
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/images" class="nav-link {% if active == 'images' %}active{% endif %}">
-                            图片
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/videos" class="nav-link {% if active == 'videos' %}active{% endif %}">
-                            视频
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/files" class="nav-link {% if active == 'files' %}active{% endif %}">
-                            资源
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/ai" class="nav-link {% if active == 'ai' %}active{% endif %}">
-                            AI生成
-                        </a>
-                    </li>
-                    {% if current_user %}
-                    <li>
-                        <a href="/following-feed" class="nav-link {% if active == 'following-feed' %}active{% endif %}">
-                            👥 关注
-                        </a>
-                    </li>
-                    {% endif %}
-                </ul>
-
-                <!-- 右侧操作 -->
-                <div class="flex items-center gap-sm">
-                    {% if current_user %}
-                    <!-- 通知图标 -->
-                    <a href="/notifications" class="notification-icon" id="notification-bell"
-                        style="position: relative; font-size: 1.3rem; text-decoration: none;">
-                        🔔 <span class="drawer-text">通知</span>
-                        <span id="notification-badge" class="notification-badge" style="display: none;"></span>
-                    </a>
-
-                    <!-- 私信图标 -->
-                    <a href="/messages" class="notification-icon" id="message-icon"
-                        style="position: relative; font-size: 1.3rem; text-decoration: none; margin-left: var(--spacing-sm);">
-                        💬 <span class="drawer-text">私信</span>
-                        <span id="message-badge" class="notification-badge" style="display: none;"></span>
-                    </a>
-
-                    <!-- 我的 -->
-                    <a href="/me" class="nav-link {% if active == 'me' %}active{% endif %}">
-                        👤 我的
-                    </a>
-
-                    <!-- 收藏 -->
-                    <a href="/favorites" class="nav-link {% if active == 'favorites' %}active{% endif %}">
-                        🔖 收藏
-                    </a>
-                    {% endif %}
-
-                    <!-- 暗色模式切换 -->
-                    <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
-                        🌙 <span class="drawer-text">切换主题</span>
-                    </button>
-
-                    <!-- 用户菜单 -->
-                    {% if current_user %}
-                    {% if current_user['is_admin'] %}
-                    <span class="badge badge-primary">管理员</span>
-                    {% endif %}
-                    <form action="/logout" method="post" style="display: inline;">
-                        <button type="submit" class="btn btn-sm btn-ghost">登出</button>
-                    </form>
-                    {% else %}
-                    <a href="/login" class="btn btn-sm btn-secondary">登录</a>
-                    <a href="/register" class="btn btn-sm btn-primary">注册</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- 导航抽屉背景遮罩 (仅移动端) -->
-    <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
-
-    <!-- 主内容区 -->
-    <main class="container main-content"
-        style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-2xl); position: relative; z-index: 1;">
-        {% block content %}{% endblock %}
-    </main>
-
-    {% include "_quick_upload_modal.html" %}
-    {% include "_confirm_delete_modal.html" %}
-    {% if current_user %}{% include "_upload_panel.html" %}{% endif %}
-
-    <!-- 页脚 -->
-    <footer class="site-footer">
-        <div class="footer-glow"></div>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-brand">
-                    <span class="footer-logo">✨ {{ site_title }}</span>
-                    <p class="footer-tagline">现代化内容分享平台</p>
-                </div>
-                <div class="footer-links">
-                    <a href="/images">图片</a>
-                    <a href="/videos">视频</a>
-                    <a href="/ai">AI生成</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 {{ site_title }} &middot; Powered by PM ShareHub 2.0</p>
-            </div>
-        </div>
-    </footer>
-
-    <style>
-        .site-footer {
-            background: linear-gradient(180deg,
-                    var(--color-bg-secondary) 0%,
-                    var(--color-bg-tertiary) 100%);
-            padding: var(--spacing-2xl) 0 var(--spacing-lg);
-            margin-top: var(--spacing-2xl);
-            border-top: 1px solid var(--color-border);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .footer-glow {
-            position: absolute;
-            top: -100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 200px;
-            background: radial-gradient(ellipse, rgba(102, 126, 234, 0.15), transparent 70%);
-            pointer-events: none;
-        }
-
-        [data-theme="dark"] .footer-glow {
-            background: radial-gradient(ellipse, rgba(124, 58, 237, 0.2), transparent 70%);
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: var(--spacing-lg);
-            margin-bottom: var(--spacing-lg);
-        }
-
-        .footer-brand {
-            text-align: left;
-        }
-
-        .footer-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--color-accent), #ed64a6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .footer-tagline {
-            color: var(--color-text-muted);
-            font-size: 0.875rem;
-            margin-top: var(--spacing-xs);
-            margin-bottom: 0;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: var(--spacing-lg);
-        }
-
-        .footer-links a {
-            color: var(--color-text-secondary);
-            font-weight: 500;
-            transition: color var(--transition-fast);
-        }
-
-        .footer-links a:hover {
-            color: var(--color-accent);
-            text-decoration: none;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: var(--spacing-lg);
-            border-top: 1px solid var(--color-border-light);
-        }
-
-        .footer-bottom p {
-            color: var(--color-text-muted);
-            font-size: 0.875rem;
-            margin: 0;
-        }
-
-        @media (max-width: 768px) {
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-brand {
-                text-align: center;
-            }
-        }
-    </style>
-
-    <!-- Toast容器将由JS动态创建 -->
-
-    <!-- JavaScript -->
-    <script src="/static/js/toast.js"></script>
-    <script src="/static/js/like.js"></script>
-    <script src="/static/js/favorite.js"></script>
-    <script src="/static/js/lightbox.js"></script>
-
-    <!-- 汉堡菜单交互 -->
-    <script>
-        (function () {
-            const hamburgerBtn = document.getElementById('hamburger-btn');
-            const navDrawer = document.getElementById('nav-drawer');
-            const backdrop = document.getElementById('nav-drawer-backdrop');
-
-            if (!hamburgerBtn || !navDrawer || !backdrop) return;
-
-            function openDrawer() {
-                navDrawer.classList.add('open');
-                backdrop.classList.add('open');
-                document.body.classList.add('nav-open');
-            }
-
-            function closeDrawer() {
-                navDrawer.classList.remove('open');
-                backdrop.classList.remove('open');
-                document.body.classList.remove('nav-open');
-            }
-
-            hamburgerBtn.addEventListener('click', function () {
-                if (navDrawer.classList.contains('open')) {
-                    closeDrawer();
-                } else {
-                    openDrawer();
-                }
-            });
-
-            backdrop.addEventListener('click', closeDrawer);
-
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape' && navDrawer.classList.contains('open')) {
-                    closeDrawer();
-                }
-            });
-        })();
-    </script>
-    <script src="/static/js/confirm-dialog.js"></script>
-    <script src="/static/js/comment.js"></script>
-    <script src="/static/js/ai-poll.js"></script>
-    <script src="/static/quick-modal.js"></script>
-    <script src="/static/js/confirm-delete.js"></script>
-    {% if current_user %}<script src="/static/js/uploader.js"></script>{% endif %}
-
-    <!-- 通知未读数轮询 -->
+<body class="studio-site {% block body_class %}{% endblock %}" data-section="{{ active|default('') }}">
+ <a class="skip-link" href="#main-content">跳到主要内容</a>
+ <nav class="navbar" aria-label="主导航"><div class="navbar-content">
+  <a href="/" class="navbar-brand"><span class="brand-mark" aria-hidden="true">✦</span><span>{{ site_title|default('PM ShareHub', true) }}<small>SHARE YOUR LITTLE UNIVERSE</small></span></a>
+  <button class="hamburger-btn" id="hamburger-btn" type="button" aria-label="打开导航菜单" aria-expanded="false" aria-controls="nav-drawer"><span></span><span></span><span></span></button>
+  <div class="nav-drawer" id="nav-drawer">
+   <ul class="navbar-nav">{% for href,label,key in [('/','发现','home'),('/images','图片','images'),('/videos','视频','videos'),('/files','资源','files'),('/ai','AI 工坊','ai')] %}<li><a href="{{ href }}" class="nav-link {% if active==key %}active{% endif %}" {% if active==key %}aria-current="page"{% endif %}>{{ label }}</a></li>{% endfor %}</ul>
+   <div class="nav-tools">
+    <a href="/search" class="nav-icon-btn" aria-label="搜索帖子和用户" title="搜索">{{ ui.icon('search') }}<span class="drawer-text">搜索</span></a>
+    <button id="theme-toggle" class="theme-toggle nav-icon-btn" type="button" aria-label="切换主题">☾</button>
     {% if current_user %}
-    <script>
-        (function () {
-            const badge = document.getElementById('notification-badge');
-            if (!badge) return;
-            async function checkUnread() {
-                try {
-                    const res = await fetch('/api/notifications/unread-count');
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    if (data.count > 0) {
-                        badge.textContent = data.count > 99 ? '99+' : data.count;
-                        badge.style.display = '';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                } catch (e) { }
-            }
-            checkUnread();
-            setInterval(checkUnread, 60000);
-        })();
-    </script>
-
-    <!-- 私信未读数轮询 -->
-    <script>
-        (function () {
-            const badge = document.getElementById('message-badge');
-            if (!badge) return;
-            async function checkUnread() {
-                try {
-                    const res = await fetch('/api/messages/unread-count');
-                    if (!res.ok) return;
-                    const data = await res.json();
-                    if (data.count > 0) {
-                        badge.textContent = data.count > 99 ? '99+' : data.count;
-                        badge.style.display = '';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                } catch (e) { }
-            }
-            checkUnread();
-            setInterval(checkUnread, 60000);
-        })();
-    </script>
-    {% endif %}
-
-    {% block extra_js %}{% endblock %}
-
-    <!-- Flash消息转Toast -->
-    {% if get_flashed_messages %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            {% for category, message in get_flashed_messages(with_categories = true) %}
-            Toast.show('{{ message }}', '{{ category }}');
-            {% endfor %}
-        });
-    </script>
-    {% endif %}
-</body>
-
-</html>
+    <a href="/notifications" class="nav-icon-btn" id="notification-bell" aria-label="通知" title="通知">{{ ui.icon('bell') }}<span class="drawer-text">通知</span><span id="notification-badge" class="notification-badge" hidden></span></a>
+    <a href="/messages" class="nav-icon-btn" id="message-icon" aria-label="私信" title="私信">{{ ui.icon('message') }}<span class="drawer-text">私信</span><span id="message-badge" class="notification-badge" hidden></span></a>
+    <details class="account-menu"><summary aria-label="个人菜单"><span class="account-avatar">{{ (current_user['display_name'] or current_user['username'])[0]|upper }}</span><span class="account-name">{{ current_user['display_name'] or current_user['username'] }}</span><span aria-hidden="true">⌄</span></summary><div class="account-dropdown"><span class="account-label">你的创作空间</span><a href="/me">{{ ui.icon('grid') }}创作中心</a><a href="/following-feed">{{ ui.icon('user') }}关注动态</a><a href="/favorites">{{ ui.icon('bookmark') }}我的收藏</a><a href="/user/{{ current_user['username'] }}">{{ ui.icon('user') }}公开主页</a>{% if current_user['is_admin'] %}<a href="/admin/">{{ ui.icon('shield') }}管理后台</a>{% endif %}<form action="/logout" method="post"><button type="submit">退出登录</button></form></div></details>
+    {% else %}<a href="/login" class="nav-login">登录</a><a href="/register" class="btn btn-sm btn-primary">加入社区 {{ ui.icon('arrow') }}</a>{% endif %}
+   </div>
+  </div>
+ </div></nav>
+ <div class="nav-drawer-backdrop" id="nav-drawer-backdrop"></div>
+ <main class="container main-content" id="main-content">{% block content %}{% endblock %}</main>
+ {% include '_quick_upload_modal.html' %}{% include '_confirm_delete_modal.html' %}{% if current_user %}{% include '_upload_panel.html' %}{% endif %}
+ {% if active != 'home' %}{% include '_companion.html' %}{% endif %}
+ <footer class="site-footer"><div class="container footer-content"><div class="footer-brand"><a href="/" class="footer-logo">✦ {{ site_title|default('PM ShareHub', true) }}</a><p>让灵感相遇，让美好被看见。</p></div><nav class="footer-links" aria-label="页脚导航"><a href="/images">发现作品</a><a href="/files">资源补给</a><a href="/ai">AI 工坊</a><a href="/search">搜索</a></nav><span class="footer-signature">A LITTLE SPACE. ENDLESS INSPIRATION.</span></div></footer>
+ {% for script in ['toast','like','favorite','lightbox','confirm-dialog','comment','ai-poll'] %}<script src="/static/js/{{ script }}.js"></script>{% endfor %}
+ <script src="/static/quick-modal.js"></script><script src="/static/js/confirm-delete.js?v=20260926-2"></script>
+ {% if current_user %}<script src="/static/js/uploader.js"></script>{% endif %}
+ <script src="/static/js/studio.js?v=20260926-2" defer></script><script src="/static/js/suite.js?v=20260926-7" defer></script><script src="/static/js/avatar-loader.js?v=20260926-9" defer></script>
+ {% block extra_js %}{% endblock %}
+ {% if get_flashed_messages %}<script>document.addEventListener('DOMContentLoaded',function(){ {% for category, message in get_flashed_messages(with_categories=true) %}Toast.show({{ message|tojson }},{{ category|tojson }});{% endfor %} });</script>{% endif %}
+</body></html>

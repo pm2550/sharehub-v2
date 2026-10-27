@@ -1,250 +1,15 @@
 {% extends "base.html" %}
-
-{% block title %}{{ post['title'] }} - {{ site_title }}{% endblock %}
-
-{% block extra_css %}
-<style>
-.post-detail {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.back-button {
-    margin-bottom: var(--spacing-lg);
-}
-
-.post-header {
-    margin-bottom: var(--spacing-xl);
-}
-
-.post-header h1 {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-md);
-    line-height: 1.2;
-}
-
-.post-meta {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    color: var(--color-text-secondary);
-    flex-wrap: wrap;
-}
-
-.post-meta a {
-    color: var(--color-accent);
-    text-decoration: none;
-}
-
-.post-meta a:hover {
-    text-decoration: underline;
-}
-
-.post-media {
-    margin-bottom: var(--spacing-xl);
-    background: var(--color-bg-secondary);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-}
-
-.post-media img,
-.post-media video {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.post-media video {
-    background: #000;
-}
-
-.post-description {
-    margin-bottom: var(--spacing-lg);
-    line-height: 1.6;
-}
-
-.post-prompt {
-    background: var(--color-bg-secondary);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-lg);
-    border-left: 4px solid var(--color-accent);
-}
-
-.post-prompt pre {
-    margin: 0;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    line-height: 1.5;
-}
-
-.post-actions {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-xl);
-}
-
-.comments-section {
-    margin-top: var(--spacing-2xl);
-}
-
-.comments-section h2 {
-    margin-bottom: var(--spacing-lg);
-}
-
-.comment-form {
-    margin-bottom: var(--spacing-xl);
-}
-
-.comment-form textarea {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    min-height: 140px;
-    padding: var(--spacing-md);
-    box-sizing: border-box;
-    resize: none;
-    overflow-y: hidden;
-    margin-bottom: var(--spacing-md);
-}
-
-.comment {
-    padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--color-border);
-}
-
-.comment:last-child {
-    border-bottom: none;
-}
-
-.comment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-sm);
-}
-
-.comment-author {
-    font-weight: 600;
-    color: var(--color-text-primary);
-    text-decoration: none;
-}
-
-.comment-author:hover {
-    color: var(--color-accent);
-}
-
-.comment-meta {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-}
-
-.comment-date {
-    color: var(--color-text-tertiary);
-    font-size: 0.875rem;
-}
-
-.comment-delete-btn {
-    font-size: 0.8125rem;
-    padding: 4px 12px;
-}
-
-.comment-content {
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-}
-
-.no-comments {
-    text-align: center;
-    padding: var(--spacing-xl);
-    color: var(--color-text-tertiary);
-}
-
-.danger-zone {
-    margin-top: var(--spacing-2xl);
-    padding: var(--spacing-lg);
-    border: 2px solid var(--color-error);
-    border-radius: var(--radius-md);
-    background: var(--color-error-light);
-}
-
-.danger-zone h2 {
-    color: var(--color-error);
-    margin-bottom: var(--spacing-md);
-}
-
-.download-link {
-    color: var(--color-accent);
-    text-decoration: none;
-}
-
-.download-link:hover {
-    text-decoration: underline;
-}
-
-@media (max-width: 768px) {
-    .post-detail {
-        padding: var(--spacing-md);
-    }
-
-    .post-media img,
-    .post-media video {
-        max-height: 50vh;
-    }
-
-    .post-header h1 {
-        font-size: 1.25rem;
-    }
-
-    .post-meta {
-        flex-wrap: wrap;
-        font-size: 0.875rem;
-        gap: var(--spacing-xs);
-    }
-
-    .post-actions {
-        flex-wrap: wrap;
-        gap: var(--spacing-xs);
-    }
-
-    .comment-form textarea {
-        min-height: 80px;
-    }
-
-    .comment-item {
-        padding: var(--spacing-sm);
-        margin-bottom: var(--spacing-sm);
-    }
-}
-</style>
-{% endblock %}
-
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-post{% endblock %}
+{% block title %}{{ post["title"] }} - {{ site_title|default("PM ShareHub",true) }}{% endblock %}
 {% block content %}
-<div class="post-detail">
-    <!-- Back Button -->
-    <div class="back-button">
-        <a href="{{ back_url }}" class="btn btn-secondary">← 返回</a>
-    </div>
-
-    <!-- Post Header -->
-    <div class="post-header">
-        <h1>{{ post['title'] }}</h1>
-        <div class="post-meta">
-            <span>📅 {{ post['created_at'] }}</span>
-            <span>👤 {% if post['user_id'] %}<a href="/user/{{ post['author_username'] }}">{{ post['author'] }}</a>{% else %}{{ post['author'] }}{% endif %}</span>
-            <span class="badge">{{ post['source'] }}</span>
-        </div>
-    </div>
-
-    <!-- Media -->
+<div class="detail-toolbar"><a href="{{ back_url }}">← 返回浏览</a><span class="eyebrow">A LITTLE PIECE OF INSPIRATION</span><span class="badge">{{ 'AI 创作' if post['source']=='ai' else ('影像' if post['media_type']=='video' else ('资源分享' if post['media_type']=='file' else '图片分享')) }}</span></div>
+<div class="post-detail"><div class="post-layout"><div class="post-stage">    <!-- Media -->
     <div class="post-media">
         {% if post['media_type'] == 'image' %}
             <img src="/media/{{ post['filename'] }}" alt="{{ post['title'] }}" />
         {% elif post['media_type'] == 'video' %}
-            <video src="/media/{{ post['filename'] }}" controls playsinline></video>
+            <video src="/media/{{ post['filename'] }}" {% if post['thumbnail_path'] %}poster="/media/{{ post['thumbnail_path'] }}"{% endif %} controls playsinline preload="none"></video>
             <p style="padding: var(--spacing-md); text-align: center; color: var(--color-text-secondary);">
                 如果无法在线播放，可 <a href="/media/{{ post['filename'] }}" download class="download-link">下载视频</a>
             </p>
@@ -284,7 +49,7 @@
         {% endif %}
     </div>
 
-    <!-- Description -->
+</div><aside class="post-information"><span class="eyebrow">THE STORY BEHIND</span><h1>{{ post['title'] }}</h1><div class="post-creator"><span class="author-dot">{{ (post['author'] or 'P')[0]|upper }}</span><div>{% if post['user_id'] %}<a href="/user/{{ post['author_username'] }}">{{ post['author'] }}</a>{% else %}<span>{{ post['author'] }}</span>{% endif %}<small>{{ post['created_at'][:16] }}</small></div></div>    <!-- Description -->
     {% if post['description'] %}
     <div class="post-description">
         <p>{{ post['description'] }}</p>
@@ -336,7 +101,7 @@
         </a>
     </div>
 
-    <!-- Comments Section -->
+<div class="detail-tip">喜欢这个瞬间？收藏起来，下次灵感枯竭时再来看看。</div></aside></div><div class="post-discussion">    <!-- Comments Section -->
     <div class="card comments-section">
         <h2>评论 ({{ comments|length }})</h2>
 
@@ -404,12 +169,10 @@
         </form>
     </div>
     {% endif %}
-</div>
-
-{% if post['prompt'] and current_user %}
+</div></div>{% if post['prompt'] and current_user %}
 <script>
 async function savePromptFromPost() {
-    const name = window.prompt('给这个 Prompt 起个名字：', '{{ post["title"]|replace("'", "\\'") }}');
+    const name = window.prompt('给这个 Prompt 起个名字：', {{ post['title']|tojson }});
     if (!name || !name.trim()) return;
 
     const formData = new FormData();
@@ -435,4 +198,5 @@ async function savePromptFromPost() {
 }
 </script>
 {% endif %}
+
 {% endblock %}

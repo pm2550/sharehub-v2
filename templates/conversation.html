@@ -1,16 +1,13 @@
 {% extends "base.html" %}
-
-{% block title %}与 {{ partner.display_name or partner.username }} 的对话 - {{ site_title }}{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="/static/css/messages.css?v=20260209-2">
-{% endblock %}
-
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-conversation{% endblock %}
+{% block title %}与 {{ partner.display_name or partner.username }} 的对话 - {{ site_title|default("PM ShareHub",true) }}{% endblock %}
 {% block content %}
-<div class="chat-container">
+
+<div class="conversation-layout"><aside class="chat-sidebar"><a href="/messages" class="text-link">← 所有私信</a><div class="chat-person"><span class="person-avatar">{{ (partner.display_name or partner.username)[0]|upper }}</span><h2>{{ partner.display_name or partner.username }}</h2><p>@{{ partner.username }}</p><a href="/user/{{ partner.username }}" class="btn btn-secondary">查看主页 ↗</a></div><p class="chat-aside-note">把灵感与喜欢的作品，分享给懂你的人。</p></aside><div class="chat-container">
     <!-- 聊天头部 -->
     <div class="chat-header">
-        <a href="/messages" class="back-btn">←</a>
+        <a href="/messages" class="back-btn" aria-label="返回私信列表">←</a>
         <div class="partner-info">
             <a href="/user/{{ partner.username }}" class="partner-link">
                 {% if partner.avatar_path %}
@@ -22,7 +19,7 @@
                 <span class="partner-name">{{ partner.display_name or partner.username }}</span>
             </a>
         </div>
-        <div class="chat-actions"></div>
+        <div class="chat-actions"><span class="chat-private">私信对话</span></div>
     </div>
 
     <!-- 消息列表 -->
@@ -47,8 +44,9 @@
                 <a href="/post/{{ m.post.id }}" class="shared-post-card">
                     <div class="shared-post-thumb">
                         {% if m.post.media_type == 'video' %}
-                        <video src="/media/{{ m.post.preview_path or m.post.filename }}" muted preload="metadata" class="shared-post-media"></video>
+                        {% if m.post.thumbnail_path %}<img src="/media/{{ m.post.thumbnail_path }}" alt="" class="shared-post-media" loading="lazy">{% else %}<span class="shared-post-media file-preview">{{ ui.icon("video") }}</span>{% endif %}
                         <div class="play-badge">▶</div>
+                        {% elif m.post.media_type == 'file' %}<span class="shared-post-media file-preview">{{ ui.icon('folder') }}</span>
                         {% elif m.post.thumbnail_path %}
                         <img src="/media/{{ m.post.thumbnail_path }}" alt="{{ m.post.title }}" class="shared-post-media" loading="lazy">
                         {% else %}
@@ -59,7 +57,7 @@
                         <div class="shared-post-title">{{ m.post.title }}</div>
                         <div class="shared-post-meta">
                             {% if m.post.source == 'ai' %}🤖 AI · {% endif %}
-                            {{ '图片' if m.post.media_type == 'image' else '视频' }} · ❤️ {{ m.post.likes }}
+                            {{ '图片' if m.post.media_type == 'image' else ('视频' if m.post.media_type == 'video' else '文件') }} · ❤️ {{ m.post.likes }}
                         </div>
                     </div>
                 </a>
@@ -85,7 +83,7 @@
             <div class="attached-info">
                 <span id="attached-post-title"></span>
             </div>
-            <button type="button" id="remove-attached-post" class="remove-attached-btn">&times;</button>
+            <button type="button" aria-label="移除分享的帖子" id="remove-attached-post" class="remove-attached-btn">&times;</button>
         </div>
     </div>
 
@@ -93,19 +91,20 @@
     <div class="chat-input-area">
         <form id="message-form" class="message-form" data-partner="{{ partner.username }}">
             <input type="hidden" id="attached-post-id" name="post_id" value="">
-            <button type="button" id="share-post-btn" class="share-post-btn" title="分享帖子">📎</button>
-            <textarea name="content" id="message-input" placeholder="发送消息..." rows="1"></textarea>
+            <button type="button" id="share-post-btn" class="share-post-btn" title="分享帖子" aria-label="分享帖子">📎</button>
+            <label class="sr-only" for="message-input">消息内容</label><textarea name="content" id="message-input" placeholder="发送消息..." rows="1"></textarea>
             <button type="submit" class="send-btn" disabled>发送</button>
         </form>
     </div>
 </div>
 
+</div>
 <!-- 帖子选择弹窗 -->
-<div id="share-post-modal" class="share-modal-overlay" style="display: none;">
+<div id="share-post-modal" class="share-modal-overlay" role="dialog" aria-modal="true" aria-label="选择分享的帖子" style="display: none;">
     <div class="share-modal">
         <div class="share-modal-header">
             <h3>选择要分享的帖子</h3>
-            <button type="button" id="close-share-modal" class="close-modal-btn">&times;</button>
+            <button type="button" aria-label="关闭帖子选择" id="close-share-modal" class="close-modal-btn">&times;</button>
         </div>
         <div class="share-modal-search">
             <input type="text" id="share-search-input" placeholder="搜索帖子标题..." autocomplete="off">
@@ -115,8 +114,7 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="/static/js/messages.js?v=20260209-2"></script>
 {% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/messages.css?v=20260926-2">{% endblock %}
+{% block extra_js %}<script src="/static/js/messages.js?v=20260926-3"></script>{% endblock %}

@@ -1,14 +1,7 @@
 {% extends "base.html" %}
-
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-error{% endblock %}
 {% block title %}{{ error }} - {{ site_title }}{% endblock %}
-
 {% block content %}
-<div style="max-width: 600px; margin: var(--spacing-2xl) auto; text-align: center;">
-    <div class="card" style="padding: var(--spacing-2xl);">
-        <div style="font-size: 4rem; margin-bottom: var(--spacing-lg);">⚠️</div>
-        <h1 style="margin-bottom: var(--spacing-md);">{{ error }}</h1>
-        <p class="text-muted" style="margin-bottom: var(--spacing-xl);">{{ message }}</p>
-        <a href="/" class="btn btn-primary">返回首页</a>
-    </div>
-</div>
+<section class="error-layout"><span class="error-star" aria-hidden="true">✧</span><span class="eyebrow">A LITTLE DETOUR</span><h1>{{ error }}</h1><p>{{ message }}</p><div class="hero-actions"><a href="/" class="btn btn-primary">回到发现 {{ ui.icon('arrow') }}</a><a href="/search" class="btn btn-secondary">搜索灵感</a></div></section>
 {% endblock %}

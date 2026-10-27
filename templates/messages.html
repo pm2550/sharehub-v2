@@ -1,21 +1,9 @@
 {% extends "base.html" %}
-
-{% block title %}我的私信 - {{ site_title }}{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="/static/css/messages.css?v=20260208-1">
-{% endblock %}
-
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-messages{% endblock %}
+{% block title %}我的私信 - {{ site_title|default("PM ShareHub",true) }}{% endblock %}
 {% block content %}
-<div class="messages-container">
-    <div class="page-header">
-        <h1>💬 我的私信</h1>
-        {% if unread_message_count > 0 %}
-        <span class="badge badge-primary">{{ unread_message_count }} 未读</span>
-        {% endif %}
-    </div>
-
-    {% if conversations %}
+{{ ui.heading('CONVERSATIONS THAT MATTER','让交流，靠近一点','和有趣的人聊聊创作，分享刚刚发现的小美好。','message') }}{{ ui.personal_nav('messages') }}<div class="inbox-layout"><section class="messages-container"><div class="section-heading"><h2>最近会话</h2><span class="result-count">{{ unread_message_count }} 条未读</span></div>    {% if conversations %}
     <div class="conversations-list">
         {% for c in conversations %}
         <a href="/messages/{{ c.other_user.username }}"
@@ -48,12 +36,12 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="empty-state">
-        <div class="icon">💬</div>
+    <div class="empty-state studio-empty"><span class="empty-emblem">{{ ui.icon("message") }}</span>
         <h3>还没有发起对话</h3>
         <p>去用户主页给感兴趣的人发私信吧！</p>
         <a href="/" class="btn btn-primary">探索用户</a>
     </div>
     {% endif %}
-</div>
+</section><aside class="inbox-aside"><span class="eyebrow">A SIMPLE HELLO</span><div class="inbox-art">{{ ui.icon('message') }}<span>✦</span></div><h3>每一段交流，<br>都从你好开始。</h3><p>在创作者的主页点击「私信」，就可以开启新的对话。</p><a href="/search" class="btn btn-secondary">寻找创作者 {{ ui.icon('arrow') }}</a></aside></div>
 {% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/messages.css?v=20260926-2">{% endblock %}

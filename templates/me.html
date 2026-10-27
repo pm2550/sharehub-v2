@@ -1,574 +1,22 @@
 {% extends "base.html" %}
-
-{% block title %}我的中心 - {{ site_title }}{% endblock %}
-
-{% block extra_css %}
-<style>
-  /* ========== Profile Hero ========== */
-  .profile-hero {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
-    background: linear-gradient(135deg,
-        rgba(102, 126, 234, 0.1) 0%,
-        rgba(237, 100, 166, 0.08) 50%,
-        rgba(246, 173, 85, 0.05) 100%);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    flex-wrap: wrap;
-    gap: var(--spacing-lg);
-  }
-
-  .profile-hero::before {
-    content: '';
-    position: absolute;
-    top: -80px;
-    right: -80px;
-    width: 250px;
-    height: 250px;
-    background: radial-gradient(circle, rgba(102, 126, 234, 0.2), transparent 60%);
-    animation: float 8s ease-in-out infinite;
-  }
-
-  [data-theme="dark"] .profile-hero {
-    background: linear-gradient(135deg,
-        rgba(124, 58, 237, 0.12) 0%,
-        rgba(237, 100, 166, 0.08) 50%,
-        rgba(246, 173, 85, 0.04) 100%);
-  }
-
-  @keyframes float {
-
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-
-    50% {
-      transform: translate(15px, -15px);
-    }
-  }
-
-  .profile-info {
-    position: relative;
-    z-index: 1;
-  }
-
-  .profile-info h2 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-xs);
-    background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .profile-username {
-    color: var(--color-text-secondary);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-  }
-
-  .admin-badge {
-    background: linear-gradient(135deg, #667eea 0%, #8b5cf6 100%);
-    color: white;
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-
-  .profile-stats {
-    display: flex;
-    gap: var(--spacing-md);
-    align-items: center;
-    flex-wrap: wrap;
-    position: relative;
-    z-index: 1;
-  }
-
-  .stat-badge {
-    padding: var(--spacing-sm) var(--spacing-md);
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    font-weight: 500;
-  }
-
-  [data-theme="dark"] .stat-badge {
-    background: rgba(45, 45, 45, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .profile-link {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: linear-gradient(135deg, var(--color-accent) 0%, #8b5cf6 100%);
-    color: white;
-    text-decoration: none;
-    border-radius: var(--radius-lg);
-    font-weight: 600;
-    transition: all var(--transition-base);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-
-  .profile-link:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-    color: white;
-    text-decoration: none;
-  }
-
-  /* ========== Tabs Container ========== */
-  .tabs-container {
-    position: relative;
-    padding: var(--spacing-xl);
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.95) 0%,
-        rgba(255, 255, 255, 0.85) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: var(--radius-xl);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-    margin-bottom: var(--spacing-2xl);
-  }
-
-  [data-theme="dark"] .tabs-container {
-    background: linear-gradient(135deg,
-        rgba(36, 36, 36, 0.95) 0%,
-        rgba(45, 45, 45, 0.9) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .tab-nav {
-    display: flex;
-    gap: var(--spacing-xs);
-    margin-bottom: var(--spacing-xl);
-    overflow-x: auto;
-    padding: var(--spacing-xs);
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: var(--radius-lg);
-  }
-
-  .tab-nav button {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: transparent;
-    border: none;
-    border-radius: var(--radius-md);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    transition: all var(--transition-base);
-    font-weight: 600;
-    white-space: nowrap;
-    font-size: 0.9375rem;
-  }
-
-  .tab-nav button.active {
-    background: linear-gradient(135deg, var(--color-accent) 0%, #8b5cf6 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  }
-
-  .tab-nav button:hover:not(.active) {
-    color: var(--color-text-primary);
-    background: rgba(102, 126, 234, 0.15);
-  }
-
-  .tab-content {
-    display: none;
-  }
-
-  .tab-content.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* ========== Form Cards ========== */
-  .two-column-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--spacing-lg);
-  }
-
-  .three-column-inputs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-md);
-  }
-
-  .form-card {
-    position: relative;
-    padding: var(--spacing-xl);
-    background: var(--color-bg-secondary);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--color-border-light);
-  }
-
-  .form-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-accent), #ed64a6);
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  }
-
-  .form-card h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-lg);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-  }
-
-  .form-group {
-    margin-bottom: var(--spacing-md);
-  }
-
-  .form-group label {
-    display: block;
-    margin-bottom: var(--spacing-xs);
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
-
-  .form-group input,
-  .form-group textarea {
-    width: 100%;
-    padding: var(--spacing-md);
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    transition: all var(--transition-base);
-  }
-
-  .form-group input:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  }
-
-  .form-group .hint {
-    display: block;
-    margin-top: var(--spacing-xs);
-    font-size: 0.875rem;
-    color: var(--color-text-tertiary);
-  }
-
-  .submit-btn {
-    padding: var(--spacing-sm) var(--spacing-xl);
-    background: linear-gradient(135deg, var(--color-accent) 0%, #8b5cf6 100%);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all var(--transition-base);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-
-  .submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  }
-
-  /* ========== Queue Items ========== */
-  .queue-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-md);
-    background: var(--color-bg-secondary);
-    border-radius: var(--radius-lg);
-    gap: var(--spacing-md);
-    transition: all var(--transition-base);
-    border: 1px solid transparent;
-  }
-
-  .queue-item:hover {
-    border-color: var(--color-border);
-    transform: translateX(4px);
-  }
-
-  .queue-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .queue-item-info {
-    flex: 1;
-  }
-
-  .queue-item-info strong {
-    background: linear-gradient(135deg, var(--color-accent) 0%, #8b5cf6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-  }
-
-  .queue-item-info .prompt-preview {
-    margin-top: var(--spacing-xs);
-    color: var(--color-text-secondary);
-    font-size: 0.875rem;
-  }
-
-  .queue-item-status {
-    text-align: right;
-  }
-
-  /* ========== Comment Items ========== */
-  .comment-post-link {
-    font-weight: 700;
-    color: var(--color-accent);
-    text-decoration: none;
-  }
-
-  .comment-post-link:hover {
-    text-decoration: underline;
-  }
-
-  .comment-text {
-    margin-top: var(--spacing-xs);
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  /* ========== Status Badges ========== */
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-full);
-    font-size: 0.8125rem;
-    font-weight: 600;
-  }
-
-  .status-badge.done {
-    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
-    color: #22543d;
-  }
-
-  .status-badge.failed {
-    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
-    color: #742a2a;
-  }
-
-  .status-badge.running {
-    background: linear-gradient(135deg, #bee3f8 0%, #90cdf4 100%);
-    color: #2a4365;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  .status-badge.pending {
-    background: linear-gradient(135deg, #feebc8 0%, #fbd38d 100%);
-    color: #744210;
-  }
-
-  @keyframes pulse {
-
-    0%,
-    100% {
-      opacity: 1;
-    }
-
-    50% {
-      opacity: 0.7;
-    }
-  }
-
-  /* ========== Manage Items ========== */
-  .manage-item {
-    display: grid;
-    grid-template-columns: 200px 1fr auto;
-    gap: var(--spacing-lg);
-    padding: var(--spacing-lg);
-    margin-bottom: var(--spacing-md);
-    background: var(--color-bg-secondary);
-    border-radius: var(--radius-lg);
-    align-items: start;
-    transition: all var(--transition-base);
-    border: 1px solid transparent;
-  }
-
-  .manage-item:hover {
-    border-color: var(--color-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  }
-
-  .manage-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .manage-item-thumb {
-    aspect-ratio: 16 / 9;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: var(--color-bg-tertiary);
-  }
-
-  .manage-item-thumb img,
-  .manage-item-thumb video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .manage-item-form {
-    flex: 1;
-  }
-
-  .manage-item-form .form-group:last-child {
-    margin-bottom: 0;
-  }
-
-  .manage-item-actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-
-  /* ========== Empty State ========== */
-  .empty-state {
-    text-align: center;
-    padding: var(--spacing-2xl);
-    background: linear-gradient(135deg,
-        rgba(255, 255, 255, 0.9) 0%,
-        rgba(255, 255, 255, 0.7) 100%);
-    border-radius: var(--radius-xl);
-    border: 2px dashed var(--color-border);
-    color: var(--color-text-secondary);
-  }
-
-  [data-theme="dark"] .empty-state {
-    background: linear-gradient(135deg,
-        rgba(36, 36, 36, 0.9) 0%,
-        rgba(45, 45, 45, 0.7) 100%);
-  }
-
-  /* ========== Pagination ========== */
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: var(--spacing-md);
-    margin: var(--spacing-xl) 0;
-  }
-
-  .pagination a,
-  .pagination span {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    border-radius: var(--radius-md);
-    text-decoration: none;
-    color: var(--color-text-primary);
-    transition: all var(--transition-base);
-    font-weight: 500;
-  }
-
-  .pagination a:hover {
-    background: var(--color-bg-secondary);
-    color: var(--color-accent);
-  }
-
-  .pagination .current {
-    background: linear-gradient(135deg, var(--color-accent) 0%, #8b5cf6 100%);
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  }
-
-  .pagination .disabled {
-    opacity: 0.4;
-    pointer-events: none;
-  }
-
-  /* ========== Responsive ========== */
-  @media (max-width: 768px) {
-    .manage-item {
-      grid-template-columns: 1fr;
-    }
-
-    .manage-item-actions {
-      flex-direction: row;
-    }
-
-    .profile-hero {
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .profile-stats {
-      justify-content: center;
-    }
-
-    .tab-nav button {
-      font-size: 0.875rem;
-      padding: var(--spacing-sm);
-    }
-
-    .three-column-inputs {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
-{% endblock %}
-
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-workspace{% endblock %}
+{% block title %}创作中心 - {{ site_title }}{% endblock %}
 {% block content %}
-<!-- Profile Hero -->
-<div class="profile-hero">
-  <div class="profile-info">
-    <h2>{{ current_user['display_name'] or current_user['username'] }}</h2>
-    <p class="profile-username">
-      @{{ current_user['username'] }}
-      {% if current_user['is_admin'] %}
-      <span class="admin-badge">👑 管理员</span>
-      {% endif %}
-    </p>
-  </div>
-  <div class="profile-stats">
-    <span class="stat-badge">📝 {{ pagination['total'] }} 条内容</span>
-    <span class="stat-badge">⏳ {{ queue_active_count }} 条队列</span>
-    <a href="/user/{{ current_user['username'] }}" class="profile-link">👤 查看公开主页</a>
-  </div>
-</div>
-
+{{ ui.heading('YOUR CREATIVE WORKSPACE','我的创作空间','管理作品、记录灵感，也照顾好独一无二的自己。','grid') }}{{ ui.personal_nav('me') }}
+<div class="workspace-summary"><div class="workspace-identity"><span class="person-avatar">{{ (current_user['display_name'] or current_user['username'])[0]|upper }}</span><div><strong>{{ current_user['display_name'] or current_user['username'] }}</strong><span>@{{ current_user['username'] }}</span></div></div><div class="workspace-numbers"><span><strong>{{ pagination['total'] }}</strong>份作品</span><span><strong>{{ queue_active_count }}</strong>项进行中</span><a href="/user/{{ current_user['username'] }}">公开主页 ↗</a></div></div>
 <!-- Tabs -->
 <div class="tabs-container">
-  <div class="tab-nav">
-    <button class="tab-button" data-tab="profile">📝 资料与安全</button>
-    <button class="tab-button" data-tab="create">➕ 发布内容</button>
-    <button class="tab-button" data-tab="queue">🤖 AI 队列</button>
-    <button class="tab-button active" data-tab="manage">📦 内容管理</button>
-    <button class="tab-button" data-tab="comments">💬 我的评论</button>
+  <div class="tab-nav" role="tablist" aria-label="创作中心分区">
+    <button class="tab-button" data-workspace-tab="profile" role="tab" id="workspace-profile" aria-controls="tab-profile" aria-selected="false" tabindex="-1">📝 资料与安全</button>
+    <button class="tab-button" data-workspace-tab="create" role="tab" id="workspace-create" aria-controls="tab-create" aria-selected="false" tabindex="-1">➕ 发布内容</button>
+    <button class="tab-button" data-workspace-tab="queue" role="tab" id="workspace-queue" aria-controls="tab-queue" aria-selected="false" tabindex="-1">🤖 AI 队列</button>
+    <button class="tab-button active" data-workspace-tab="manage" role="tab" id="workspace-manage" aria-controls="tab-manage" aria-selected="true" tabindex="0">📦 内容管理</button>
+    <button class="tab-button" data-workspace-tab="comments" role="tab" id="workspace-comments" aria-controls="tab-comments" aria-selected="false" tabindex="-1">💬 我的评论</button>
   </div>
 
   <!-- Profile Tab -->
-  <div class="tab-content" id="tab-profile">
+  <div class="tab-content" id="tab-profile" role="tabpanel" aria-labelledby="workspace-profile" hidden>
     <div class="two-column-form">
       <div class="form-card">
         <h3>👤 个人资料</h3>
@@ -612,14 +60,14 @@
           <button type="submit" class="btn btn-primary">更新密码</button>
         </form>
         <p style="margin-top: var(--spacing-md); color: var(--color-text-tertiary); font-size: 0.875rem;">
-          登录态由 session cookie 维持，不需要每次重新登录。
+          使用独立的密码，让你的创作空间更安心。
         </p>
       </div>
     </div>
   </div>
 
   <!-- Create Tab -->
-  <div class="tab-content" id="tab-create">
+  <div class="tab-content" id="tab-create" role="tabpanel" aria-labelledby="workspace-create" hidden>
     <div class="two-column-form">
       <div class="form-card">
         <h3>📷 上传资源</h3>
@@ -639,8 +87,8 @@
           <div class="form-group">
             <label for="upload_media">文件</label>
             <input type="file" id="upload_media" name="media"
-              accept="image/*,video/mp4,video/webm,video/quicktime,video/x-m4v" required class="input" />
-            <span class="hint">支持图片和视频（mp4/webm/mov/m4v）。分片后台上传，进度见右下角任务面板</span>
+              accept="*/*" required class="input" />
+            <span class="hint">支持图片、视频和各类文件。上传进度会显示在任务面板。</span>
           </div>
 
           <button type="submit" class="btn btn-primary">上传</button>
@@ -686,7 +134,7 @@
   </div>
 
   <!-- Queue Tab -->
-  <div class="tab-content" id="tab-queue">
+  <div class="tab-content" id="tab-queue" role="tabpanel" aria-labelledby="workspace-queue" hidden>
     <h3 style="margin-bottom: var(--spacing-md);">我的 AI 队列</h3>
     <p style="margin-bottom: var(--spacing-lg); color: var(--color-text-secondary);">
       已按提交顺序串行执行
@@ -734,7 +182,7 @@
   </div>
 
   <!-- Manage Tab -->
-  <div class="tab-content active" id="tab-manage">
+  <div class="tab-content active" id="tab-manage" role="tabpanel" aria-labelledby="workspace-manage">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
       <h3>我的内容管理</h3>
       <span class="badge">第 {{ pagination['page'] }} / {{ pagination['total_pages'] }} 页</span>
@@ -763,13 +211,7 @@
     {% if my_posts %}
     {% for p in my_posts %}
     <div class="manage-item">
-      <div class="manage-item-thumb">
-        {% if p['media_type'] == 'image' %}
-        <img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" />
-        {% else %}
-        <video src="/media/{{ p['preview_path'] or p['filename'] }}" autoplay loop muted playsinline preload="metadata"></video>
-        {% endif %}
-      </div>
+      <div class="manage-item-thumb"><a href="/post/{{ p['id'] }}" aria-label="查看 {{ p['title'] }}">{{ ui.preview(p) }}</a></div>
 
       <div class="manage-item-form">
         <form action="/post/{{ p['id'] }}/edit" method="post">
@@ -827,7 +269,7 @@
   </div>
 
   <!-- Comments Tab -->
-  <div class="tab-content" id="tab-comments">
+  <div class="tab-content" id="tab-comments" role="tabpanel" aria-labelledby="workspace-comments" hidden>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg);">
       <h3>我的评论</h3>
       <span class="badge">{{ my_comments|length }} 条</span>
@@ -856,50 +298,5 @@
     {% endif %}
   </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-  // Tab switching
-  function switchTab(tabName) {
-    // Update buttons
-    document.querySelectorAll('.tab-button').forEach(btn => {
-      btn.classList.remove('active');
-      if (btn.dataset.tab === tabName) {
-        btn.classList.add('active');
-      }
-    });
-
-    // Update content
-    document.querySelectorAll('.tab-content').forEach(content => {
-      content.classList.remove('active');
-    });
-    document.getElementById('tab-' + tabName).classList.add('active');
-
-    // Update hash
-    window.location.hash = tabName;
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    // Tab button click handlers
-    document.querySelectorAll('.tab-button').forEach(button => {
-      button.addEventListener('click', function () {
-        switchTab(this.dataset.tab);
-      });
-    });
-
-    // Handle hash on load
-    const hash = window.location.hash.substring(1);
-    if (hash && ['profile', 'create', 'queue', 'manage', 'comments'].includes(hash)) {
-      switchTab(hash);
-    }
-
-    // Auto-reload queue tab if there are active jobs
-    {% if queue_active_count > 0 %}
-    if (window.location.hash === '#queue') {
-      setTimeout(function () { window.location.reload(); }, 15000);
-    }
-    {% endif %}
-  });
-</script>
 {% endblock %}

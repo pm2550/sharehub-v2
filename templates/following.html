@@ -1,59 +1,8 @@
 {% extends "base.html" %}
-
-{% block title %}{{ profile_user['display_name'] or profile_user['username'] }} 关注的人 - {{ site_title }}{% endblock %}
-
-{% block extra_css %}
-<style>
-@media (max-width: 768px) {
-    .grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-    }
-
-    .card {
-        padding: var(--spacing-sm);
-    }
-}
-</style>
-{% endblock %}
-
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-people{% endblock %}
+{% block title %}关注的人 - {{ site_title }}{% endblock %}
 {% block content %}
-<div class="following-page">
-    <div class="page-header" style="margin-bottom: var(--spacing-xl);">
-        <h1>{{ profile_user['display_name'] or profile_user['username'] }} 关注的人</h1>
-        <p class="text-muted"><a href="/user/{{ profile_user['username'] }}">← 返回个人主页</a></p>
-    </div>
-
-    {% if following %}
-        <div class="grid gap-md" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
-            {% for followed in following %}
-            <div class="card">
-                <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                    <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--color-bg-secondary); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        {% if followed['avatar_path'] %}
-                            <img src="/media/{{ followed['avatar_path'] }}" alt="{{ followed['username'] }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
-                        {% else %}
-                            👤
-                        {% endif %}
-                    </div>
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0;">
-                            <a href="/user/{{ followed['username'] }}" style="color: var(--color-text-primary);">
-                                {{ followed['display_name'] or followed['username'] }}
-                            </a>
-                        </h4>
-                        <p class="text-muted text-sm" style="margin: var(--spacing-xs) 0 0 0;">@{{ followed['username'] }}</p>
-                        {% if followed['bio'] %}
-                        <p class="text-muted text-sm" style="margin-top: var(--spacing-xs);">{{ followed['bio'][:100] }}{% if followed['bio']|length > 100 %}...{% endif %}</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="card text-center" style="padding: var(--spacing-2xl);">
-            <p class="text-muted">还没有关注任何人</p>
-        </div>
-    {% endif %}
-</div>
+{{ ui.heading('CREATIVE CONNECTIONS',(profile_user['display_name'] or profile_user['username']) ~ '关注的人','因为共同的喜欢，让彼此的世界更宽一点。','user') }}
+<div class="section-toolbar"><a href="/user/{{ profile_user['username'] }}">← 返回个人主页</a><span class="result-count">{{ following|length }} 位创作者</span></div>{% if following %}<div class="people-grid">{% for u in following %}{{ ui.person(u) }}{% endfor %}</div>{% else %}{{ ui.empty('相遇还在路上','先去发现一些有趣的创作吧。','/images','发现作品','user') }}{% endif %}
 {% endblock %}
