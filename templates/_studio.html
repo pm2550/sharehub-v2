@@ -1,0 +1,52 @@
+{% macro icon(name, cls='') -%}
+<svg class="ui-icon {{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{% if name == 'image' %}<rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/>
+{% elif name == 'video' %}<rect x="3" y="3" width="18" height="18" rx="5"/><path d="m10 8 6 4-6 4z"/>
+{% elif name == 'folder' %}<path d="M3 8V6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 11h18"/>
+{% elif name == 'star' %}<path d="m12 2 2.7 7.3L22 12l-7.3 2.7L12 22l-2.7-7.3L2 12l7.3-2.7z"/>
+{% elif name == 'search' %}<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>
+{% elif name == 'user' %}<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>
+{% elif name == 'heart' %}<path d="M20.8 4.7a5.5 5.5 0 0 0-7.8 0L12 5.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.5a5.5 5.5 0 0 0 0-7.8z"/>
+{% elif name == 'bookmark' %}<path d="M6 3h12v19l-6-4-6 4z"/>
+{% elif name == 'message' %}<path d="M21 11a8 8 0 0 1-8 8H8l-5 3V11a9 9 0 0 1 18 0z"/><path d="M7 10h10M7 14h6"/>
+{% elif name == 'bell' %}<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>
+{% elif name == 'upload' %}<path d="M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6"/>
+{% elif name == 'download' %}<path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/>
+{% elif name == 'arrow' %}<path d="M5 12h14m-5-5 5 5-5 5"/>
+{% elif name == 'grid' %}<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>
+{% elif name == 'shield' %}<path d="m12 2 9 4v6c0 6-9 10-9 10S3 18 3 12V6z"/><path d="m8 12 3 3 5-6"/>
+{% else %}<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>{% endif %}
+</svg>
+{%- endmacro %}
+{% macro heading(kicker,title,description,kind='star') -%}
+<header class="page-banner">
+ <div class="page-banner-copy"><span class="eyebrow">{{ kicker }}</span><h1>{{ title }}<span class="heading-dot">.</span></h1><p>{{ description }}</p></div>
+ <div class="page-emblem emblem-{{ kind }}" aria-hidden="true"><span class="emblem-orbit"></span>{{ icon(kind) }}<i>✦</i></div>
+</header>
+{%- endmacro %}
+{% macro filters(selected) -%}
+<nav class="filter-tabs" aria-label="内容分类">{% for href,label,key,ico in [('/images','图片','images','image'),('/videos','视频','videos','video'),('/files','资源','files','folder'),('/ai','AI 工坊','ai','star')] %}<a href="{{ href }}" class="{% if selected == key %}active{% endif %}" {% if selected == key %}aria-current="page"{% endif %}>{{ icon(ico) }}{{ label }}</a>{% endfor %}</nav>
+{%- endmacro %}
+{% macro personal_nav(selected) -%}
+<nav class="personal-nav" aria-label="个人空间">{% for href,label,key,ico in [('/me','创作中心','me','grid'),('/following-feed','关注动态','following-feed','user'),('/favorites','我的收藏','favorites','bookmark'),('/messages','私信','messages','message'),('/notifications','通知','notifications','bell')] %}<a href="{{ href }}" {% if selected == key %}aria-current="page" class="active"{% endif %}>{{ icon(ico) }}{{ label }}</a>{% endfor %}</nav>
+{%- endmacro %}
+{% macro empty(title,desc,href='/',label='发现灵感',kind='star') -%}
+<div class="empty-state studio-empty"><span class="empty-emblem">{{ icon(kind) }}</span><h3>{{ title }}</h3><p>{{ desc }}</p>{% if href %}<a class="btn btn-secondary" href="{{ href }}">{{ label }}{{ icon('arrow') }}</a>{% endif %}</div>
+{%- endmacro %}
+{% macro preview(p) -%}
+{% if p['media_type'] == 'video' %}<div class="video-preview"><video data-preview-src="/media/{{ p['preview_path'] or p['filename'] }}" {% if p['thumbnail_path'] %}poster="/media/{{ p['thumbnail_path'] }}"{% endif %} muted playsinline loop preload="none" aria-label="{{ p['title'] }}预览"></video><span class="preview-play" aria-hidden="true">▷</span></div>
+{% elif p['media_type'] == 'file' %}<div class="file-preview">{{ icon('folder') }}<span>{{ p['filename'].rsplit('.',1)[-1]|upper if '.' in p['filename'] else 'FILE' }}</span></div>
+{% else %}<img src="/media/{{ p['thumbnail_path'] or p['filename'] }}" alt="{{ p['title'] }}" loading="lazy" decoding="async" />{% endif %}
+{%- endmacro %}
+{% macro card(p) -%}
+<article class="gallery-item"><a href="/post/{{ p['id'] }}">{{ preview(p) }}<span class="media-kind">{{ 'AI' if p['source'] == 'ai' else ('影像' if p['media_type'] == 'video' else ('资源' if p['media_type'] == 'file' else '图片')) }}</span><div class="gallery-item-overlay"><h3>{{ p['title'] }}</h3><div class="gallery-item-meta"><span class="card-author"><span class="author-dot" aria-hidden="true">{{ (p['author'] or 'P')[0]|upper }}</span>{{ p['author'] or '创作者' }}</span><span class="card-likes">{{ icon('heart') }}{{ p['likes'] }}</span></div></div></a></article>
+{%- endmacro %}
+{% macro pager(pg, path='', suffix='') -%}
+{% if pg and pg['total_pages'] > 1 %}<nav class="pagination" aria-label="分页">{% if pg['page']>1 %}<a href="{{ path }}?page={{ pg['page']-1 }}{{ suffix }}">← 上一页</a>{% else %}<span class="disabled" aria-disabled="true">← 上一页</span>{% endif %}<span class="current" aria-current="page">{{ pg['page'] }} <small>/ {{ pg['total_pages'] }}</small></span>{% if pg['page']<pg['total_pages'] %}<a href="{{ path }}?page={{ pg['page']+1 }}{{ suffix }}">下一页 →</a>{% else %}<span class="disabled" aria-disabled="true">下一页 →</span>{% endif %}</nav>{% endif %}
+{%- endmacro %}
+{% macro person(u) -%}
+<a href="/user/{{ u['username'] }}" class="person-card"><span class="person-avatar">{% if u['avatar_path'] %}<img src="/media/{{ u['avatar_path'] }}" loading="lazy" alt=""/>{% else %}{{ (u['display_name'] or u['username'])[0]|upper }}{% endif %}</span><span class="person-copy"><strong>{{ u['display_name'] or u['username'] }}</strong><small>@{{ u['username'] }}</small>{% if u['bio'] %}<span>{{ u['bio'][:80] }}</span>{% endif %}</span>{{ icon('arrow') }}</a>
+{%- endmacro %}
+{% macro admin_nav(selected) -%}
+<nav class="personal-nav" aria-label="管理后台"><a href="/admin/" class="{{ 'active' if selected=='dashboard' else '' }}">{{ icon('grid') }}总览</a><a href="/admin/users" class="{{ 'active' if selected=='users' else '' }}">{{ icon('user') }}用户管理</a><a href="/admin/reports" class="{{ 'active' if selected=='reports' else '' }}">{{ icon('shield') }}举报管理</a><a href="/me">返回创作中心</a></nav>
+{%- endmacro %}

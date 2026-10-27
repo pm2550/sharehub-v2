@@ -1,25 +1,4 @@
 {% if current_user %}
-<button type="button" class="quick-fab" data-modal-open="upload-modal">
-    <span class="fab-icon">+</span>
-    <span class="btn-text">上传</span>
-</button>
-
-<dialog class="quick-upload-dialog" id="upload-modal" aria-labelledby="upload-modal-title">
-  <div class="modal-card">
-    <div class="modal-head">
-      <h3 id="upload-modal-title">快速上传</h3>
-      <button type="button" class="modal-close" data-modal-close="upload-modal">关闭</button>
-    </div>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-      {% set next_path = (request.url.path ~ ('?' ~ request.url.query if request.url.query else '')) if request else '/me' %}
-      <input type="hidden" name="next" value="{{ next_path }}" />
-      <label>标题<input name="title" required /></label>
-      <label>描述<input name="description" /></label>
-      <label>文件<input type="file" name="media" accept="*/*" required /></label>
-      <p class="sub">支持图片、视频和各类文件。图片/视频显示在对应页面，其他文件显示在资源区。</p>
-      <p class="sub">大文件会分片后台上传，进度在右下角任务面板；中断后重选同一个文件可从断点继续。</p>
-      <button type="submit">上传并发布</button>
-    </form>
-  </div>
-</dialog>
-{% endif %}
+<button type="button" class="quick-fab" data-modal-open="upload-modal" aria-label="发布新作品"><span class="fab-icon">+</span><span class="btn-text">分享灵感</span></button>
+<dialog class="quick-upload-dialog" id="upload-modal" aria-labelledby="upload-modal-title"><div class="modal-card"><div class="modal-head"><div><span class="eyebrow">SHARE SOMETHING LOVELY</span><h3 id="upload-modal-title">发布一份新灵感</h3></div><button type="button" class="modal-close" data-modal-close="upload-modal" aria-label="关闭上传窗口">×</button></div>
+<form action="/upload" method="post" enctype="multipart/form-data">{% set next_path=(request.url.path ~ ('?' ~ request.url.query if request.url.query else '')) if request else '/me' %}<input type="hidden" name="next" value="{{ next_path }}"><div class="form-group"><label for="quick-title">作品标题</label><input id="quick-title" name="title" placeholder="给这份灵感起个名字" required></div><div class="form-group"><label for="quick-description">分享一点创作故事 <span>选填</span></label><textarea id="quick-description" name="description" rows="2" placeholder="它的故事，或你想分享的小细节…"></textarea></div><div class="upload-drop-zone"><span class="upload-emblem" aria-hidden="true">↑</span><label for="quick-file">选择图片、视频或资源文件</label><input id="quick-file" type="file" name="media" accept="*/*" required><span class="form-hint">选择文件后，上传进度会显示在任务面板。</span></div><button type="submit" class="btn btn-primary upload-submit">上传并发布 ↗</button></form></div></dialog>{% endif %}

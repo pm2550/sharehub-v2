@@ -7,6 +7,11 @@
   // 显示确认删除模态框
   window.showDeleteConfirm = function (form, message) {
     pendingForm = form;
+    var title = form.getAttribute('data-confirm-title');
+    document.getElementById('confirm-delete-title').textContent = title || '确认删除';
+    confirmBtn.textContent = title ? '确认修改' : '确定删除';
+    confirmBtn.className = title ? 'btn btn-primary' : 'btn btn-danger';
+    document.getElementById('confirm-delete-warning').hidden = !!title;
     if (message) {
       confirmMessage.textContent = message;
     } else {

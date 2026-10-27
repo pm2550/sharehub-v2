@@ -145,6 +145,7 @@
     // ==================== 轮询 ====================
 
     async function pollNewMessages() {
+        if (document.hidden) return;
         var partnerUsername = messageForm ? messageForm.dataset.partner : null;
         if (!partnerUsername) return;
 
@@ -191,7 +192,9 @@
         if (postData) {
             var mediaHtml = '';
             if (postData.media_type === 'video') {
-                mediaHtml = '<video src="/media/' + esc(postData.filename) + '" muted preload="metadata" class="shared-post-media"></video><div class="play-badge">▶</div>';
+                mediaHtml = (postData.thumbnail_path ? '<img src="/media/' + esc(postData.thumbnail_path) + '" alt="视频封面" class="shared-post-media" loading="lazy">' : '') + '<div class="play-badge">▶</div>';
+            } else if (postData.media_type === 'file') {
+                mediaHtml = '<span class="shared-post-media file-preview">文件</span>';
             } else if (postData.thumbnail_path) {
                 mediaHtml = '<img src="/media/' + esc(postData.thumbnail_path) + '" alt="' + esc(postData.title) + '" class="shared-post-media" loading="lazy">';
             } else {
@@ -200,7 +203,7 @@
 
             var metaText = '';
             if (postData.source === 'ai') metaText += '🤖 AI · ';
-            metaText += (postData.media_type === 'image' ? '图片' : '视频') + ' · ❤️ ' + (postData.likes || 0);
+            metaText += (postData.media_type === 'image' ? '图片' : postData.media_type === 'video' ? '视频' : '文件') + ' · ❤️ ' + (postData.likes || 0);
 
             postCardHtml =
                 '<a href="/post/' + postData.id + '" class="shared-post-card">' +
@@ -294,7 +297,7 @@
 
                 var thumbHtml = '';
                 if (post.media_type === 'video') {
-                    thumbHtml = '<video src="' + esc(post.thumb_url) + '" muted preload="metadata" class="share-thumb-img"></video><div class="play-badge-sm">▶</div>';
+                    thumbHtml = post.thumbnail_path ? '<img src="' + esc(post.thumb_url) + '" alt="视频封面" class="share-thumb-img" loading="lazy"><div class="play-badge-sm">▶</div>' : '<div class="share-thumb-img file-preview" aria-label="视频">▶</div>';
                 } else {
                     thumbHtml = '<img src="' + esc(post.thumb_url) + '" alt="' + esc(post.title) + '" class="share-thumb-img" loading="lazy">';
                 }
