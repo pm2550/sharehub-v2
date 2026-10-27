@@ -326,3 +326,34 @@ def delete_media_file(media_dir: str, rel_path: str):
             os.unlink(full_path)
         except Exception as e:
             print(f"Warning: Failed to delete file {full_path}: {e}")
+
+
+def generate_video_thumbnail(input_path: str, media_dir: str) -> str:
+    """Create a small static cover independently of the playable hover preview."""
+    ffmpeg_bin = shutil.which("ffmpeg")
+    if not ffmpeg_bin or not Path(input_path).is_file():
+        return ""
+    directory = Path(media_dir) / "thumbnails"
+    directory.mkdir(parents=True, exist_ok=True)
+    name = f"video_{uuid.uuid4().hex}.webp"
+    target = directory / name
+    duration = get_video_duration(str(input_path))
+    seek = min(1.0, duration * 0.15) if duration > 0.15 else 0.0
+    try:
+        for position in dict.fromkeys((seek, 0.0)):
+            command = [
+                ffmpeg_bin, "-hide_banner", "-loglevel", "error", "-y",
+                "-threads", "1", "-ss", str(position), "-i", str(input_path),
+                "-frames:v", "1", "-an", "-vf",
+                "scale=640:640:force_original_aspect_ratio=decrease",
+                "-c:v", "libwebp", "-quality", "82", "-threads", "1", str(target),
+            ]
+            process = subprocess.run(command, capture_output=True, timeout=25)
+            if process.returncode == 0 and target.is_file() and target.stat().st_size:
+                with Image.open(target) as image:
+                    image.verify()
+                return f"thumbnails/{name}"
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        pass
+    target.unlink(missing_ok=True)
+    return ""

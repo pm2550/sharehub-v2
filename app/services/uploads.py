@@ -26,6 +26,7 @@ from app.services.auth import now_iso
 from app.services.media import (
     generate_thumbnails,
     generate_video_preview,
+    generate_video_thumbnail,
     get_video_duration,
     strip_exif,
     transcode_video,
@@ -140,12 +141,21 @@ async def process_video(src: Path, stored_name: str) -> dict:
         except Exception as e:
             logger.warning("generate_video_preview failed: %s", e)
 
+        thumbnail_path = None
+        try:
+            thumbnail_path = (
+                await run_in_threadpool(generate_video_thumbnail, str(out_path), str(settings.MEDIA_DIR))
+                or None
+            )
+        except Exception as e:
+            logger.warning("generate_video_thumbnail failed: %s", e)
+
         file_size = out_path.stat().st_size
         pmdrive_uri = await pmdrive.upload_file(str(out_path), stored_name, "video/mp4")
 
         return {
             "pmdrive_uri": pmdrive_uri,
-            "thumbnail_path": None,
+            "thumbnail_path": thumbnail_path,
             "preview_path": preview_path,
             "file_size": file_size,
         }

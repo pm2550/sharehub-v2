@@ -50,7 +50,7 @@ def me_page(
 
     my_posts = db.execute(
         """
-        SELECT p.id, p.title, p.description, p.media_type, p.filename, p.source, p.likes, p.created_at
+        SELECT p.id, p.title, p.description, p.media_type, p.filename, p.source, p.likes, p.created_at, p.thumbnail_path, p.preview_path
         FROM posts p
         WHERE p.user_id = ?
         ORDER BY p.id DESC
