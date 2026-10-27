@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% import "_studio.html" as ui with context %}
+{% block body_class %}page-admin{% endblock %}
+{% block title %}管理总览 - {{ site_title|default("PM ShareHub",true) }}{% endblock %}
+{% block content %}
+{{ ui.heading('COMMUNITY OVERVIEW','社区管理','查看社区概况，照顾好每一份创作。','shield') }}{{ ui.admin_nav('dashboard') }}<div class="admin-stats">{% for key,label in [('total_users','社区用户'),('total_posts','分享内容'),('total_comments','评论互动'),('pending_reports','待处理举报')] %}<div class="metric-card"><span>{{ label }}</span><strong>{{ stats[key] }}</strong></div>{% endfor %}</div><div class="admin-columns"><section class="surface-panel"><div class="section-heading"><h2>最近动态</h2><span>社区足迹</span></div>{% for item in recent_activity %}<div class="activity-row"><span class="activity-icon">{{ ui.icon('image' if item.type=='post' else 'user') }}</span><div><a href="{{ '/post/' ~ item.id if item.type=='post' else '/user/' ~ item.username }}">{{ item.title if item.type=='post' else item.display_name ~ ' 加入社区' }}</a><small>{{ item.created_at[:16] }}</small></div></div>{% endfor %}</section><section class="surface-panel"><span class="eyebrow">CREATION STATUS</span><h2>AI 创作概况</h2>{% for key,label in [('ai_pending','排队中'),('ai_running','正在生成'),('ai_completed','已完成'),('ai_failed','未完成')] %}<div class="metric-row"><span>{{ label }}</span><strong>{{ stats[key] }}</strong></div>{% endfor %}<a href="/ai" class="btn btn-secondary">进入 AI 工坊 ↗</a></section></div>
+{% endblock %}
