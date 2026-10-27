@@ -1,0 +1,17 @@
+{
+  "mode": "built-in image_gen",
+  "reference": "static/images/sharehub-muse-800.webp",
+  "version": "20260926-4",
+  "assets": [
+    {
+      "file": "artwork/arm-and-star-backplate.png",
+      "prompt": "Use case: precise-object-edit. Asset type: hidden-part backplate for a layered 2D puppet. The last full-body original Xiaoxing illustration is the EDIT TARGET. Preserve the EXACT composition, same 1024x1536 canvas and pixel alignment, seated pose, face with open purple eyes, silver/lavender hair, detailed cream cardigan and lavender dress, sakura crescent moon, legs, boots and original genuinely transparent background. Make TWO local changes only. (1) Remove the ENTIRE viewer-left waving arm: the raised bare hand, wrist, cuff and the large puffy cream sleeve from just below her exposed viewer-left shoulder down to its rounded elbow. Reconstruct the lavender hair behind that arm, and the underlying inner side of her cardigan/dress where needed. Leave the exposed shoulder cap and the main cardigan front panel with its flower buttons exactly in place. This is an animation backplate, the complete arm will be drawn back on top. No replacement arm. (2) Remove ONLY the four-point golden star hovering over the viewer-right hand. Reconstruct the small obscured fingertips/palm so the original hand remains in the exact same gentle cradling pose holding empty air. Preserve all other decorations on the moon. DO NOT change or shift anything else; no zoom, pose change, head change, added features or simplification. Keep the original refined rendering, fine knitted fabric, hair detail and lighting. Background truly transparent, no glow backdrop. Exact alignment with the input matters more than any creative change. No text.",
+      "role": "Aligned hidden hair and empty palm; only local crops are used by the renderer."
+    },
+    {
+      "file": "artwork/star-sprite.png",
+      "prompt": "Use case: background-extraction. Asset type: a tiny transparent animation sprite. From the FIRST of the two recent full-body Xiaoxing pictures (the original with the raised waving arm and a golden four-point star over her viewer-right hand), extract ONLY that small four-point golden crystal star. The second image is a hidden-part backplate and has no star; do not use that as the source. Preserve the star's original four-point silhouette, slender top/bottom tips, pearly pale gold translucent crystal body, subtle warm pink reflections and finely beveled luminous edges. Reconstruct the tiny bottom tip that her fingertips obscure. Show the complete SINGLE star alone, centered, filling about 80% of a square canvas. Genuinely transparent background. No fingers, skin, arm, moon, extra stars, extra points, text, cast shadow or background glow. Match the original appearance as closely as possible; this will be animated back above her hand at the original size.",
+      "role": "Complete isolated star for a toss/spin/catch action."
+    }
+  ]
+}

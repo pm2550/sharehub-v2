@@ -1,0 +1,112 @@
+{
+  "results": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/images",
+      "status": 200
+    },
+    {
+      "path": "/videos",
+      "status": 200
+    },
+    {
+      "path": "/files",
+      "status": 200
+    },
+    {
+      "path": "/ai",
+      "status": 200
+    },
+    {
+      "path": "/login",
+      "status": 200
+    },
+    {
+      "path": "/register",
+      "status": 200
+    },
+    {
+      "path": "/search",
+      "status": 200
+    },
+    {
+      "path": "/search?q=AI",
+      "status": 200
+    },
+    {
+      "path": "/tag/sakura",
+      "status": 200
+    },
+    {
+      "path": "/post/138",
+      "status": 200
+    },
+    {
+      "path": "/me",
+      "status": 401
+    },
+    {
+      "path": "/favorites",
+      "status": 401
+    },
+    {
+      "path": "/messages",
+      "status": 401
+    },
+    {
+      "path": "/notifications",
+      "status": 401
+    },
+    {
+      "path": "/admin/",
+      "status": 401
+    },
+    {
+      "path": "/admin/users",
+      "status": 401
+    },
+    {
+      "path": "/admin/reports",
+      "status": 401
+    }
+  ],
+  "errors": [],
+  "failedAssets": [],
+  "avatar": {
+    "frames": 7,
+    "active": false,
+    "fpsCap": 18,
+    "drawCalls": 21,
+    "triangles": 70152,
+    "action": "wave",
+    "blink": 0,
+    "blinkLeft": 0,
+    "happy": 0.32,
+    "neck": [
+      0,
+      0,
+      0
+    ],
+    "head": [
+      0,
+      0,
+      -0.08
+    ],
+    "hand": [
+      0,
+      -0.15,
+      -0.22189175839537573
+    ],
+    "upperArm": [
+      -0.12,
+      0,
+      -0.12
+    ]
+  },
+  "backup": "local working directory (backups/20260926T030854Z, not published)",
+  "checkedAt": "2026-09-26T03:13:12.837Z",
+  "notes": "Read-only local service checks; authenticated page states validated separately with fixtures; public reverse proxy not independently checked."
+}

@@ -1,0 +1,10 @@
+<aside class="site-companion" aria-label="小星的灵感角">
+ <div class="companion-avatar-wrap">{% set avatar_size='compact' %}{% include '_avatar.html' %}<button class="avatar-minimize" type="button" aria-label="收起动态角色">−</button></div>
+ <div class="companion-panel" id="companion-panel" hidden>
+  <div class="companion-panel-head"><strong>小星的灵感角 <span aria-hidden="true">✦</span></strong><button type="button" data-companion-close aria-label="收起小星">×</button></div>
+  <p id="companion-greeting" role="status">{% if active=='ai' %}先描绘你想象中的画面，再给它一点光与色彩。{% elif active=='files' %}遇到实用的小宝藏，别忘了收藏它。{% elif active=='messages' %}一句友好的招呼，就是一段交流的开始。{% elif active=='me' %}今天也创造一点属于自己的美好吧。{% else %}慢慢逛，总有一份灵感会与你相遇。{% endif %}</p>
+  <div class="companion-links"><a href="/ai">去创作 ↗</a><a href="/favorites">我的收藏 ↗</a></div>
+  <button type="button" class="companion-hello">和小星打招呼 ✧</button><button type="button" id="motion-toggle" class="companion-motion" aria-pressed="false">暂停动效</button>
+ </div>
+ <button type="button" class="companion-trigger" id="companion-trigger" aria-expanded="false" aria-controls="companion-panel" aria-label="打开小星的灵感角"><img src="/static/images/sharehub-muse-480.webp" width="64" height="96" loading="lazy" alt=""/><span>小星 <i aria-hidden="true">✦</i></span></button>
+</aside>

@@ -1,0 +1,17 @@
+{
+  "name": "avatar-source",
+  "version": "1.0.0",
+  "description": "Local build source for the ShareHub articulated VRM companion",
+  "scripts": {
+    "build": "esbuild companion.js --bundle --minify --format=esm --target=es2020 --outfile=../../static/vendor/companion-3d.js --legal-comments=linked"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@pixiv/three-vrm": "3.5.5",
+    "esbuild": "0.25.10",
+    "three": "0.180.0"
+  },
+  "private": true
+}
